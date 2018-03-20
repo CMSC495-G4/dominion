@@ -15,15 +15,22 @@ jobs:
           - v1-dependencies-
 
       - run:
-          name: install dependencies
+          name: Install Dependencies
           command: |
-            pushd src
             python3 -m venv venv
             . venv/bin/activate
+            pushd src
             pip install -r requirements.txt
+            popd
 
       - save_cache:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "src/requirements.txt" }}
         
+      - run:
+          name: Run Tests
+          command: |
+            pushd tests
+            python3 test.py
+            popd
