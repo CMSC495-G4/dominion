@@ -23,11 +23,13 @@ pip install -r requirements.txt
 
 #### Start web server
 ```
+cd src
 python app.py
 ```
 
 
 #### Run tests
 ```
+cd tests
 python test.py
 ```
