@@ -1,6 +1,6 @@
 # dominion
 
-This repository contains the requirements and source code for an online implementation of the Dominion card game.
+This repository contains the documentation and source code for an online implementation of the Dominion card game.
 
 
 ### Requirements
