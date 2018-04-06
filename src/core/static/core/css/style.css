@@ -1,0 +1,23 @@
+/* Styles go here */
+
+.fill-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.main-bg {
+  background-image: url(../images/background.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  flex-grow: 1;
+}
+
+.login-form {
+  max-width: 360px;
+  margin: auto;
+  border-top: 1px solid rgb(160, 160, 160); /** fallback for older browsers */
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}

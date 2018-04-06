@@ -1,0 +1,43 @@
+{% load static %}
+
+<!doctype html>
+<html>
+  <head>
+    <title>Dominion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}" />
+  </head>
+  <body class="fill-screen">
+
+  {% block navbar %}
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary" style="flex-shrink: 0">
+        <a class="navbar-brand" href="#">Dominion</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/rules">Rules</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/about">About</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    {% endblock %}
+
+    {% block content %}
+    {% endblock %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.bundle.js"></script>
+    <script src="{% static 'core/js/fa-light.js' %}" defer></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+  </body>
+</html>

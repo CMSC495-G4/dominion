@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-md navbar-dark bg-primary" style="flex-shrink: 0">
+  <a class="navbar-brand" href="#">Dominion</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/rules">Rules <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about">About</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+{% endblock %}
+
+
+
+{% block content %}
+  <div class="jumbotron jumbotron-fluid bg-dark m-0">
+    <div class="container text-center text-light">
+      <h1 class="display-4">Rules of Dominion</h1>
+      <p>This section is incomplete.</p>
+    </div>
+  </div>
+
+  <div class="jumbotron jumbotron-fluid m-0" style="background-color: #0D56A6">
+    <div class="container text-light">
+      <h2 class="display-4">Action Phase</h2>
+      <p>At the start of their turn, a player may play an action card currently in their hand. If another player has a valid reaction card, they may respond to the player's action(s).</p>
+    </div>
+  </div>
+
+  <div class="jumbotron jumbotron-fluid m-0" style="background-color: #55A62A">
+    <div class="container text-light text-right">
+      <h2 class="display-4">Buy Phase</h2>
+      <p>After all actions have been completed, the player may then purchase a card from the supply using coins from treasure cards. The purchased card is then placed in the discard pile.</p>
+    </div>
+  </div>
+
+
+  <div class="jumbotron jumbotron-fluid m-0" style="background-color: #D91E18">
+    <div class="container text-light">
+      <h2 class="display-4">Cleanup Phase</h2>
+      <p>At the end of their turn, the player places any remaining cards in the discard pile and draws five new cards. If there aren't enough cards, the discard pile is shuffled into the player's deck.</p>
+    </div>
+  </div>
+{% endblock %}
