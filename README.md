@@ -1,7 +1,7 @@
 # dominion
 
 [![Build Status](https://img.shields.io/travis/CMSC495-G4/dominion.svg)](https://travis-ci.org/CMSC495-G4/dominion)
-[![Test Coverage](https://img.shields.io/codeclimate/coverage/github/CMSC495-G4/dominion.svg)](https://codeclimate.com/github/CMSC495-G4/dominion/test_coverage)
+[![Test Coverage](https://img.shields.io/codeclimate/coverage/CMSC495-G4/dominion.svg)](https://codeclimate.com/github/CMSC495-G4/dominion/test_coverage)
 
 This repository contains the documentation and source code for an online implementation of the Dominion card game.
 
