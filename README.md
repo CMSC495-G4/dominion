@@ -18,20 +18,18 @@ git clone https://github.com/CMSC495-G4/dominion
 ```
 
 #### Install dependencies
-```
-pip install django
+```bash
+pip install -r requirements.txt
 ```
 
 
 #### Start web server
-```
-cd dominion/src
-python manage.py runserver
+```bash
+python src/manage.py runserver
 ```
 
 
 #### Run tests
-```
-cd dominion/tests
-python test.py
+```bash
+python src/manage.py test
 ```

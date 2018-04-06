@@ -102,3 +102,7 @@ ENV/
 
 # vscode
 .vscode/settings.json
+
+# pipenv
+Pipfile
+Pipfile.lock
