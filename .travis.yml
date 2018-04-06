@@ -11,8 +11,9 @@ install:
   - pipenv install
 
 script:
-  - echo "script running..."
-  - ls -lash
+  - pipenv run python src/manage.py test
+  - pipenv run coverage --omit */virtualenvs/* run src/manage.py test
+  - pipenv run coverage report -m
 
 deploy:
   provider: script
