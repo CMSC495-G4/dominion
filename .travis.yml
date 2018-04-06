@@ -11,7 +11,8 @@ install:
   - pipenv install
 
 script:
-  - pipenv run src/manage.py test
+  - echo "script running..."
+  - ls -lash
 
 deploy:
   provider: script
