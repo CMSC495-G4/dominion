@@ -26,7 +26,8 @@ SECRET_KEY = 'jc$^l(ag(l^10$n__my9$p*urpg6u09fr0_1s!rh%ilh#-!_(m'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'test-no.de'
+    'test-no.de',
+    'localhost'
 ]
 
 
