@@ -5,10 +5,14 @@ python:
 install:
   - pip install -r requirements.txt
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script:
   - python src/manage.py test
-  - coverage run --omit */virtualenvs/* src/manage.py test
-  - coverage report -m
+  - coverage run src/manage.py test
 
 deploy:
   provider: script
@@ -16,3 +20,7 @@ deploy:
   script: echo "deploying..."
   on:
     branch: master
+
+after_script:
+  - coverage xml
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
