@@ -11,12 +11,12 @@ RUN mkdir -p /code \
 
 WORKDIR /code
 
-COPY Pipfile .
+COPY requirements.txt .
 
 RUN pip install --upgrade pip \
  && pip install \
     mod_wsgi \
     pipenv \
- && pipenv install
+ && pipenv install -r requirements.txt
 
 CMD pipenv shell
