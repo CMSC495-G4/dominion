@@ -1,8 +1,8 @@
 class Card:
-    def __init__(self, name, cost, ctype):
+    def __init__(self, name, cost, c_type):
         self.name = name
         self.cost = cost
-        self.ctype = ctype
+        self.c_type = c_type
 
     def __str__(self):
         return self.name
@@ -15,14 +15,14 @@ class Card:
 
 
 class VictoryCard(Card):
-    def __init__(self, name, cost, ctype, points):
-        Card.__init__(self, name, cost, ctype)
+    def __init__(self, name, cost, c_type, points):
+        Card.__init__(self, name, cost, c_type)
         self.points = points
 
 
 class TreasureCard(Card):
-    def __init__(self, name, cost, ctype, coins):
-        Card.__init__(self, name, cost, ctype)
+    def __init__(self, name, cost, c_type, coins):
+        Card.__init__(self, name, cost, c_type)
         self.coins = coins
 
     def get_coins(self):
@@ -30,12 +30,12 @@ class TreasureCard(Card):
 
 
 class ActionCard(Card):
-    def __init__(self, name, cost, ctype, action):
-        Card.__init__(self, name, cost, ctype)
+    def __init__(self, name, cost, c_type, action):
+        Card.__init__(self, name, cost, c_type)
         self.action = action
 
 
 class ReactionCard(ActionCard):
-    def __init__(self, name, cost, ctype, action, trigger):
-        ActionCard.__init__(self, name, cost, ctype, action)
+    def __init__(self, name, cost, c_type, action, trigger):
+        ActionCard.__init__(self, name, cost, c_type, action)
         self.trigger = trigger

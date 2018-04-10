@@ -51,9 +51,9 @@ allKingdomCards = [Card.ActionCard("Cellar", 2, "Action", "+1 Action, Discard an
                    Card.ActionCard("Adventurer", 6, "Action", "Reveal cards from your deck until you reveal 2 "
                                                               "Treasure cards. Put those Treasure cards into your "
                                                               "hand and discard the other revealed cards."),
-                   Card.TreasureCard("Copper", 1, "Treasure", 0),
-                   Card.TreasureCard("Silver", 2, "Treasure", 3),
-                   Card.TreasureCard("Gold", 3, "Treasure", 6),
+                   Card.TreasureCard("Copper", 0, "Treasure", 1),
+                   Card.TreasureCard("Silver", 3, "Treasure", 2),
+                   Card.TreasureCard("Gold", 6, "Treasure", 3),
                    Card.VictoryCard("Curse", 0, "Victory", -1),
                    Card.VictoryCard("Estate", 2, "Victory", 1),
                    Card.VictoryCard("Duchy", 5, "Victory", 3),
@@ -132,7 +132,8 @@ class Game:
 
             "Remodel": [[self.select_cards, self.currentPlayer, "Hand"],
                         [self.trash_cards, self.currentPlayer, self.buffer, "Hand"],
-                        [self.select_cards, self.currentPlayer, "Supply", "#==1 $<=2+" + str(self.get_top_trash_card().get_cost())],
+                        [self.select_cards, self.currentPlayer, "Supply", "#==1 $<=2+" +
+                         str(self.get_top_trash_card().get_cost())],
                         [self.gain_cards, self.currentPlayer, self.buffer]],
 
             "Smithy": [[self.draw_cards, self.currentPlayer, 3]],
@@ -188,8 +189,8 @@ class Game:
             # The check is testing to see if the card is an action card, if it is, self.check is true
             # The player is being asked if they want to set aside the Action card, if they do, self.playerAnswer is true
             # Therefore, move the card to the hand if they say not to set it aside or if the card is not an action
-            "Library": [[self.put_cards_play_area, self.currentPlayer, 7 - self.currentPlayer.get_hand_size()],
-                        [self.check_played_card, self.currentPlayer, "Action"],
+            "Library": [[self.put_cards_play_area, self.currentPlayer, 1, 7 < self.currentPlayer.get_hand_size()],
+                        [self.check_played_card, self.currentPlayer, "Action", 7 < self.currentPlayer.get_hand_size()],
                         [self.ask_player, self.currentPlayer, "Yes/No", self.check],
                         [self.move_cards, self.currentPlayer, "Play Area", "Hand", self.buffer, # CHANGE BUFFER TO MOST RECENT PLAYED CARD
                          not self.playerAnswer or not self.check],
@@ -211,18 +212,13 @@ class Game:
 
             "Adventurer": [[self.put_cards_play_area, self.currentPlayer, 1],
                            [self.check_played_card, self.currentPlayer, "Treasure"],
-                           [self.move_cards, self.currentPlayer, "Play Area", "Hand", [self.playArea, -1], self.check, 2],
+                           [self.move_cards, self.currentPlayer, "Play Area", "Hand",
+                            [self.currentPlayer.personalPlayArea, -1], self.check, 2],
                            [self.add_card_blocks, "Adventurer", 2 < self.currentMoves]]
         }
 
     def get_supply_cards(self):
         return self.supplyCards
-
-    def get_top_trash_card(self):
-        if len(self.trash) > 0:
-            return self.trash[-1]
-        else:
-            return Card.Card("Null", 0, "Null")
 
     def select_kingdom_cards(self):
         """Randomly generate 10 numbers to select 10 Kingdom cards
@@ -231,9 +227,9 @@ class Game:
 
         chosen = []
         for i in range(10):
-            randCard = random.randint(0, 24)
-            if randCard not in chosen:
-                self.supplyCards[allKingdomCards[randCard]] = 10  # Add all Kingdom cards to supply
+            rand_card = random.randint(0, 9)
+            if rand_card not in chosen:
+                self.supplyCards[allKingdomCards[rand_card]] = 10  # Add all Kingdom cards to supply
         self.supplyCards[allKingdomCards[25]] = 60 - (len(self.players) * 7)  # Add Copper cards to supply
         self.supplyCards[allKingdomCards[26]] = 40  # Add Silver cards to supply
         self.supplyCards[allKingdomCards[27]] = 30  # Add Gold cards to supply
@@ -246,19 +242,41 @@ class Game:
         """Add the individual blocks of actions to the queue
         Move the card from the player's hand to the play area
         Return the amount of actions found"""
-        numOfActions = self.add_card_blocks(name)
+        num_of_actions = self.add_card_blocks(name)
         self.move_cards(self.currentPlayer, "Hand", "Play Area", name)
-        return numOfActions
+        self.playerCompletedAction = False  # CHANGE OTHER METHODS TO CHANGE THIS TO TRUE WHEN THEY COMPLETE
+        return num_of_actions
 
-    def add_card_blocks(self, name):
+    def add_card_blocks(self, name, check=True):
         """Query database for list of actions
         Split actions into individual actions
         Add each action with the appropriate arguments to the queue
         Return the amount of actions found"""
-        actions = self.allKingdomActionCards[name]
-        for action in actions:
-            self.processQueue.append(action)
-        return len(actions)
+        if check:
+            actions = self.allKingdomActionCards[name]
+            for action in actions:
+                self.processQueue.append(action)
+            return len(actions)
+
+    def process_block(self):
+        """Process the first block in the queue."""
+        block = self.processQueue.pop(0)
+        if len(block) == 2:
+            return block[0](block[1])
+        elif len(block) == 3:
+            return block[0](block[1], block[2])
+        elif len(block) == 4:
+            return block[0](block[1], block[2], block[3])
+        elif len(block) == 5:
+            return block[0](block[1], block[2], block[3], block[4])
+        elif len(block) == 6:
+            return block[0](block[1], block[2], block[3], block[4], block[5])
+        elif len(block) == 7:
+            return block[0](block[1], block[2], block[3], block[4], block[5], block[6])
+
+    #
+    # Block Functions
+    #
 
     def draw_cards(self, player, amount):
         """Draw cards from the specified player's deck and add them to their hand
@@ -281,64 +299,94 @@ class Game:
         self.buffer = cards
         return cards
 
-    def put_cards_play_area(self, player, amount):
+    def get_top_trash_card(self):
+        if len(self.trash) > 0:
+            return self.trash[-1]
+        else:
+            return Card.Card("Null", 0, "Null")
+
+    def put_cards_play_area(self, player, amount, check=True):
         """Draw the specified amount of cards and move them to the play area
         check for negative numbers"""
-        # This function accepts an array of players and an index to specify one player so check to make sure that
-        #   player exists
-        if isinstance(player, list):
-            if len(player[0]) > player[1]:
-                player = player[0][player[1]]
-            else:
-                return []
+        if check:
+            # This function accepts an array of players and an index to specify one player so check to make sure that
+            #   player exists
+            if isinstance(player, list):
+                if len(player[0]) > player[1]:
+                    player = player[0][player[1]]
+                else:
+                    return []
 
-        cards = []
-        for i in range(amount):
-            # If they aren't any cards left in the deck, shuffle the deck
-            if len(player.deck) == 0:
-                player.shuffle()
+            cards = []
+            for i in range(amount):
+                # If they aren't any cards left in the deck, shuffle the deck
+                if len(player.deck) == 0:
+                    player.shuffle()
 
-            # Make sure the deck hasn't been exhausted
-            if len(player.deck) != 0:
-                card = player.deck.pop()
-                cards.append(card)
-                player.personalPlayArea.append(card)
-            else:
-                break
+                # Make sure the deck hasn't been exhausted
+                if len(player.deck) != 0:
+                    card = player.deck.pop()
+                    cards.append(card)
+                    player.personalPlayArea.append(card)
+                else:
+                    break
 
-        return cards
+            return cards
 
     def move_cards(self, player, loc1, loc2, cards, check=True, maxmoves=100):
         """Move cards from location 1 to location 2 if check is true and currentMoves isn't greater
         than maxmoves"""
         if check and maxmoves > self.currentMoves:
+            card_object_list = []
+            # If only a single card is specified, make it into an array so the code treat it like an array
+            if not isinstance(cards, list):
+                cards = [cards]
+            for card in cards:
+                #
+                if isinstance(card, Card.Card):
+                    card_object_list = cards
+                    break
+                # Find the corresponding card object for all of the card names
+                for aCard in allKingdomCards:
+                    if aCard.get_name() == card:
+                        card_object_list.append(aCard)
+
             if loc1 == "Play Area":
                 if loc2 == "Hand":
-                    for card in cards:
-                        player.personalPlayArea.remove(card)
-                        player.hand.append(card)
+                    for card in card_object_list:
+                        if card in player.personalPlayArea:
+                            player.personalPlayArea.remove(card)
+                            player.hand.append(card)
+                        else:
+                            return False
                 else:
                     return False
             elif loc1 == "Hand":
                 if loc2 == "Play Area":
-                    for card in cards:
-                        player.hand.remove(card)
-                        player.personalPlayArea.append(card)
+                    for card in card_object_list:
+                        if card in player.hand:
+                            player.hand.remove(card)
+                            player.personalPlayArea.append(card)
+                        else:
+                            return False
                 if loc2 == "Top of Deck":
-                    for card in cards:
-                        player.hand.remove(card)
-                        player.deck.insert(0, card)
+                    for card in card_object_list:
+                        if card in player.hand:
+                            player.hand.remove(card)
+                            player.deck.insert(0, card)
+                        else:
+                            return False
             else:
                 return False
 
-    def check_played_card(self, player, ctype):
+    def check_played_card(self, player, c_type, check=True):
         """Set checked to true if the most recent played card is the right type"""
-        if len(player.personalPlayArea) >= 1:
-            card = player.personalPlayArea[-1]
-            if card.ctype == ctype:
-                return True
-
-        return False
+        if check:
+            self.check = False
+            if len(player.personalPlayArea) >= 1:
+                card = player.personalPlayArea[-1]
+                if card.ctype == c_type:
+                    self.check = True
 
     def discard_cards(self, player, cards, location, check=True):
         """If player is an array, check to see if the array is long enough for the player to exist
@@ -376,30 +424,18 @@ class Game:
                     player = player[0][player[1]]
                 else:
                     return []
-            if isinstance(names, list):
-                for cardname in names:
-                    if location == "Hand":
-                        for card in player.hand:
-                            if card.get_name() == cardname:
-                                player.hand.remove(card)
-                                self.trash.append(card)
-                                self.playerCompletedAction = True
-                    elif location == "Play Area":
-                        for card in player.personalPlayArea:
-                            if card.get_name() == cardname:
-                                player.personalPlayArea.remove(card)
-                                self.trash.append(card)
-                                self.playerCompletedAction = True
-            else:
+            if not isinstance(names, list):
+                names = [names]
+            for card_name in names:
                 if location == "Hand":
                     for card in player.hand:
-                        if card.get_name() == names:
+                        if card.get_name() == card_name:
                             player.hand.remove(card)
                             self.trash.append(card)
                             self.playerCompletedAction = True
                 elif location == "Play Area":
                     for card in player.personalPlayArea:
-                        if card.get_name() == names:
+                        if card.get_name() == card_name:
                             player.personalPlayArea.remove(card)
                             self.trash.append(card)
                             self.playerCompletedAction = True
@@ -408,35 +444,34 @@ class Game:
         """Remove cards from the trash and give them to the specified player.
         """
         if check:
-            if isinstance(cards, list):
-                for card in cards:
-                    for tcard in self.trash:
-                        if tcard.get_name() == card:
-                            self.trash.remove(tcard)
-                            player.personalPlayArea.append(tcard)
-            else:
-                for tcard in self.trash:
-                    if tcard.get_name() == cards:
-                        self.trash.remove(tcard)
-                        player.personalPlayArea.append(tcard)
+            if not isinstance(cards, list):
+                cards = [cards]
+            for card in cards:
+                for t_card in self.trash:
+                    if t_card.get_name() == card:
+                        self.trash.remove(t_card)
+                        player.personalPlayArea.append(t_card)
 
     # card is the name of the card that the player is gaining
     # location is the location the cards are being added to such as the discard pile or the top of the deck
     def gain_cards(self, player, card, location="Play Area"):
         """Gain a card from the supply and place it in the play area unless specified otherwise. Decrease the supply
         pile by one and check to make sure a card is specified"""
-        for scard in self.supplyCards.keys():
-            if scard.get_name() == card:
-                self.supplyCards[scard] -= 1
-                if location == "Play Area":
-                    player.personalPlayArea.append(scard)
-                elif location == "Top of Deck":
-                    player.deck.insert(0, scard)
-                break
+        for s_card in self.supplyCards.keys():
+            # If the card exists in the supply, proceed
+            if s_card.get_name() == card:
+                # If the supply is not empty, proceed
+                if self.supplyCards[s_card] > 0:
+                    # Remove a card from the supply and add it to the player's play area
+                    self.supplyCards[s_card] -= 1
+                    return player.gain_card(s_card, location)
+                else:
+                    return False
+        return False
 
     def select_cards(self, player, location, constraints):
         """If player is an array, check to see if the array is long enough for the player to exist"""
-        self.buffer = [location, constraints]
+        self.buffer = [player, location, constraints]
         # This function accepts an array of players and an index to specify one player so check to make sure that
         #   player exists
         if isinstance(player, list):
@@ -446,7 +481,7 @@ class Game:
                 return []
 
         self.inputNeededFlag = True
-        while self.buffer != [location, constraints]:
+        while self.buffer == [player, location, constraints]:  # maybe change to the player's name
             time.sleep(5)
         self.inputNeededFlag = False
 
@@ -467,34 +502,63 @@ class Game:
         """Add the specified amount of coins to the specified player"""
         player.add_coins(amount)
 
-    def ask_player(self, player, question, check):
+    def ask_player(self, player, question, check=True):
         """Ask the player a yes or no question and set their answer to self.playerAnswer"""
         if check:
             self.playerAnswer = [player, question]
             self.inputNeededFlag = True
-            while self.playerAnswer != [player, question]:
+            while self.playerAnswer == [player, question]:
                 time.sleep(5)
             self.inputNeededFlag = False
+
+    def end_turn(self):
+        """Reset all variables
+        Move the cards in the play area to the discard pile"""
+        self.buffer = [""]
+        self.playerAnswer = False
+        self.playerCompletedAction = False
+        self.check = False
+        self.playersEligibleForAttack = []
+        self.currentMoves = 0
+        self.inputNeededFlag = False
+
+        self.currentPlayer.end_turn()
+
+        self.currentPlayer = self.players[(self.players.index(self.currentPlayer) + 1) % len(self.players)]
+
+    def check_game_end(self):
+        if self.supplyCards[allKingdomCards[31]] == 0:
+            return True
+        empty_piles = 0
+        for cardsLeft in self.supplyCards:
+            if cardsLeft == 0:
+                empty_piles += 1
+
+        if empty_piles >= 3:
+            return True
+
+        return False
 
     def poll_players_for_attack(self):
         """query self.players - self.currentPlayer
         set buffer to a list of players that have a moat"""
-        potentialPlayers = diff_of_list(self.players, self.currentPlayer)
-        for player in potentialPlayers:
+        potential_players = diff_of_list(self.players, self.currentPlayer)
+        for player in potential_players:
             if self.allKingdomActionCards["Moat"] in player.hand:
-                potentialPlayers.remove(player)
-        self.playersEligibleForAttack = potentialPlayers
+                potential_players.remove(player)
+        self.playersEligibleForAttack = potential_players
 
     def get_player_objects(self):
         """Translate the player's names that are in the buffer to their corresponding player object"""
         matches = []
-        for givenname in range(len(self.buffer)):
+        for given_name in range(len(self.buffer)):
             for player in range(len(self.players)):
-                if self.players[player].get_name() == givenname:
+                if self.players[player].get_name() == given_name:
                     matches.append(self.players[player])
         return matches
 
     def print_game_state(self):
+        print("*******Current Game State*******")
         for card in self.supplyCards:
             print(card.name + " : " + str(self.supplyCards[card]) + ", ", end='')
         print()
@@ -509,3 +573,5 @@ class Game:
         print()
         print(self.processQueue)
         print(self.currentPlayer.name)
+        print("********************************")
+        print()

@@ -19,6 +19,10 @@ class Player:
         self.shuffle()
         self.draw_card(5)
 
+        self.actions = 1
+        self.coins = 0
+        self.buys = 1
+
     def __str__(self):
         string = self.name + "\n\tHand: "
         for card in self.hand:
@@ -29,6 +33,12 @@ class Player:
         string += "\n\tDiscard: "
         for card in self.discard:
             string += str(card) + " "
+        string += "\n\tPlay Area: "
+        for card in self.personalPlayArea:
+            string += str(card) + " "
+        string += "\n\tActions: " + str(self.actions)
+        string += "\n\tCoins: " + str(self.coins)
+        string += "\n\tBuys: " + str(self.buys)
         return string
 
     def draw_card(self, amount):
@@ -56,17 +66,20 @@ class Player:
     def discard_card(self, name):
         """Discard to the play area"""
 
-    def gain_card(self, name, location="Personal Play Area"):
+    def gain_card(self, card, location="Personal Play Area"):
         """Add the given card to the player's area.
         Does not handle removing a card from the supply only the actions that happen to the player"""
 
-        card = Game.allKingdomCards[name]
-        if location == "Personal Play Area":
+        if location == "Play Area":
             self.personalPlayArea.append(card)
+            return True
         elif location == "Hand":
             self.hand.append(card)
+            return True
         elif location == "Top of Deck":
             self.deck.insert(0, card)
+            return True
+        return False
 
     def shuffle(self):
         """Take the cards in the discard pile, add them to the deck, shuffle them, and make them the new deck.
@@ -78,6 +91,7 @@ class Player:
 
     def add_actions(self, amount):
         """"""
+        self.actions += amount
 
     def get_name(self):
         return self.name
@@ -85,11 +99,41 @@ class Player:
     def get_hand_size(self):
         return len(self.hand)
 
-    def get_current_gold(self):
-        """"""
+    def get_current_coins(self):
+        """Return the total amount of coins that the player has including their hand and card effects."""
+        for card in self.hand:
+            if "Treasure" in card.c_type:
+                self.coins += card.get_coins()
+        return self.coins
 
     def get_current_actions(self):
-        """"""
+        return self.actions
+
+    def has_action_cards(self):
+        for card in self.hand:
+            if "Action" in card.c_type:
+                return True
+        return False
+
+    def get_action_cards(self):
+        action_cards = []
+        for card in self.hand:
+            if "Action" in card.c_type:
+                action_cards.append(card.get_name())
+        return action_cards
 
     def get_current_buys(self):
-        """"""
+        """Return the total amount of buys that the player has including card effects."""
+        return self.buys
+
+    def end_turn(self):
+        self.discard += self.hand
+        self.discard += self.personalPlayArea
+        self.hand = []
+        self.personalPlayArea = []
+
+        self.actions = 1
+        self.coins = 0
+        self.buys = 1
+
+        self.draw_card(5)
