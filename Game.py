@@ -248,7 +248,7 @@ class Game:
         Move the card from the player's hand to the play area
         Return the amount of actions found"""
         num_of_actions = self.add_card_blocks(name)
-        self.move_cards(self.currentPlayer, "Hand", "Play Area", name)
+        self.move_cards(CURRENT_PLAYER, "Hand", "Play Area", name)
         self.playerCompletedAction = False  # CHANGE OTHER METHODS TO CHANGE THIS TO TRUE WHEN THEY COMPLETE
         return num_of_actions
 
@@ -602,7 +602,7 @@ class Game:
                     self.buffer = []
                     return
                 else:
-                    cost = t_card.get_cost() + constraints[i+5:i+6]
+                    cost = t_card.get_cost() + int(constraints[i+5:i+6])
             # Remove cards that cost more than the specified amount
             for card in selectable_cards:
                 if card.get_cost() > cost:

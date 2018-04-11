@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 for a_card in available_cards:
                     if a_card.get_name() == card_name:
                         found = True
-                        if game.gain_cards(game.currentPlayer, card_name):
+                        if game.gain_cards(-1, card_name):
                             coins -= a_card.get_cost()
                             game.currentPlayer.buys -= 1
                             print(card_name + " bought.")
