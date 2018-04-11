@@ -12,7 +12,6 @@ def about(request):
 def rules(request):
     return render(request, 'core/rules.html')
 
-
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -26,3 +25,12 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, 'core/signup.html', {'form': form})
+
+def history(request):
+    return HttpResponse('History placeholder')
+
+def profile(request):
+    return HttpResponse('Profile placeholder')
+
+def play(request):
+    return HttpResponse('Play placeholder')
