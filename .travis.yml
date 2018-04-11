@@ -2,6 +2,11 @@ language: python
 python:
   - 3.6
 
+addons:
+  apt:
+    packages:
+    - sshpass
+
 install:
   - pip install -r requirements.txt
 
@@ -17,7 +22,9 @@ script:
 deploy:
   provider: script
   skip_cleanup: true
-  script: echo "deploying..."
+  script:
+    - echo "deploying..."
+    - sshpass
   on:
     branch: master
 
