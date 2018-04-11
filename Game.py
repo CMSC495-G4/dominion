@@ -79,16 +79,16 @@ class Game:
         self.buffer = [""]
         self.playerAnswer = False
         self.playerCompletedAction = False
-        self.check = False
+        self.check = False  #
         self.playersEligibleForAttack = []
         self.currentMoves = 0
         self.inputNeededFlag = False
 
         self.allKingdomActionCards = {
             "Cellar": [[self.add_actions, self.currentPlayer, 1],
-                       [self.select_cards, self.currentPlayer, "Hand"],
+                       [self.select_cards, self.currentPlayer, "Hand", "#<=" + str(self.currentPlayer.get_hand_size())],
                        [self.discard_cards, self.currentPlayer, self.buffer, "Hand"],
-                       [self.draw_cards, self.currentPlayer, self.buffer]],
+                       [self.draw_cards, self.currentPlayer, len(self.buffer)]],
 
             "Chapel": [[self.select_cards, self.currentPlayer, "Hand", "#<=4"],
                        [self.trash_cards, self.currentPlayer, self.buffer, "Hand"]],
@@ -116,7 +116,7 @@ class Game:
                            [self.move_cards, [self.playersEligibleForAttack, 2], "Hand", "Top of Deck", self.buffer]],
 
             "Feast": [[self.trash_cards, self.currentPlayer, "Feast", "Play Area"],
-                      [self.select_cards, self.currentPlayer, "Supply", "#==1 $>=5"],
+                      [self.select_cards, self.currentPlayer, "Supply", "#==1 $<=5"],
                       [self.gain_cards, self.currentPlayer, self.buffer]],
 
             "Militia": [[self.add_coins, self.currentPlayer, 2], [self.poll_players_for_attack],
@@ -130,10 +130,10 @@ class Game:
             "Moneylender": [[self.trash_cards, self.currentPlayer, "Copper", "Hand"],
                             [self.add_coins, self.currentPlayer, 3, self.playerCompletedAction]],
 
-            "Remodel": [[self.select_cards, self.currentPlayer, "Hand"],
+            "Remodel": [[self.select_cards, self.currentPlayer, "Hand", "#==1"],
                         [self.trash_cards, self.currentPlayer, self.buffer, "Hand"],
-                        [self.select_cards, self.currentPlayer, "Supply", "#==1 $<=2+" +
-                         str(self.get_top_trash_card().get_cost())],
+                        [self.select_cards, self.currentPlayer, "Supply", "#==1 $<=" +
+                         str(2+self.get_top_trash_card().get_cost())],
                         [self.gain_cards, self.currentPlayer, self.buffer]],
 
             "Smithy": [[self.draw_cards, self.currentPlayer, 3]],
@@ -172,7 +172,7 @@ class Game:
                       [self.ask_player, self.currentPlayer, "Yes/No", self.playerCompletedAction],
                       [self.give_trashed_cards, self.currentPlayer, self.buffer, self.playerAnswer]],
 
-            "Throne Room": [[self.select_cards, self.currentPlayer, "Hand", "Action"],
+            "Throne Room": [[self.select_cards, self.currentPlayer, "Hand", "#==1 Action"],
                             [self.add_card_blocks, self.currentPlayer, self.buffer],
                             [self.add_card_blocks, self.currentPlayer, self.buffer]],
 
@@ -202,7 +202,7 @@ class Game:
             "Mine": [[self.select_cards, self.currentPlayer, "Hand", "#==1 Treasure"],
                      [self.trash_cards, self.currentPlayer, self.buffer, "Hand"],
                      [self.select_cards, self.currentPlayer, "Supply",
-                      "#==1 $<=3+" + str(self.get_top_trash_card().get_cost()) + " Treasure"],
+                      "#==1 $<=" + str(3+self.get_top_trash_card().get_cost()) + " Treasure"],
                      [self.gain_cards, self.currentPlayer, self.buffer]],
 
             "Witch": [[self.draw_cards, self.currentPlayer, 2],
@@ -213,7 +213,7 @@ class Game:
             "Adventurer": [[self.put_cards_play_area, self.currentPlayer, 1],
                            [self.check_played_card, self.currentPlayer, "Treasure"],
                            [self.move_cards, self.currentPlayer, "Play Area", "Hand",
-                            [self.currentPlayer.personalPlayArea, -1], self.check, 2],
+                            [self.currentPlayer.personalPlayArea, -1], self.check_played_card(self.currentPlayer, "Treasure"), 2],
                            [self.add_card_blocks, "Adventurer", 2 < self.currentMoves]]
         }
 
@@ -276,7 +276,7 @@ class Game:
 
     #
     # Block Functions
-    #
+    # USE THE LASTBLOCKCOMPLETED TO CHAIN THE ACTIONS TOGETHER. IF ONE FAILS, THE NEXT BLOCKS WILL CONTINUE TO FAIL
 
     def draw_cards(self, player, amount):
         """Draw cards from the specified player's deck and add them to their hand
@@ -388,10 +388,14 @@ class Game:
                 if card.ctype == c_type:
                     self.check = True
 
+    # player - The player who has to discard cards
+    # cards - The name of the cards to discard, may be a single card or an array
+    # location - The location of the cards to discard
+    # check - A toggle to prevent the discarding of cards if a condition isn't met
     def discard_cards(self, player, cards, location, check=True):
-        """If player is an array, check to see if the array is long enough for the player to exist
-        Discard the player's specified cards from the specified location if the check is true
-        The specified cards are the name's only not the actual object"""
+        """Move the player's specified cards from the specified location to the their play area if the check is true"""
+
+        self.playerCompletedAction = False
         if check:
             # This function accepts an array of players and an index to specify one player so check to make sure that
             #   player exists
@@ -401,16 +405,7 @@ class Game:
                 else:
                     return []
 
-            if location == "Hand":
-                for card in cards:
-                    for handCard in player.hand:
-                        if card == handCard.get_name():
-                            player.hand.remove(handCard)
-                            player.personalPlayArea.append(handCard)
-                            break
-            elif location == "Top of Deck":
-                card = player.deck.pop(0)
-                player.personalPlayArea.append(card)
+            self.playerCompletedAction, self.buffer = player.discard_card(cards, location)
 
     def trash_cards(self, player, names, location, check=True):
         """Add card(s) to the trash. Remove any trace of them from their previous location"""
@@ -424,21 +419,10 @@ class Game:
                     player = player[0][player[1]]
                 else:
                     return []
-            if not isinstance(names, list):
-                names = [names]
-            for card_name in names:
-                if location == "Hand":
-                    for card in player.hand:
-                        if card.get_name() == card_name:
-                            player.hand.remove(card)
-                            self.trash.append(card)
-                            self.playerCompletedAction = True
-                elif location == "Play Area":
-                    for card in player.personalPlayArea:
-                        if card.get_name() == card_name:
-                            player.personalPlayArea.remove(card)
-                            self.trash.append(card)
-                            self.playerCompletedAction = True
+
+            self.playerCompletedAction, cards = player.trash_card(names, location)
+            if self.playerCompletedAction:
+                self.trash += cards
 
     def give_trashed_cards(self, player, cards, check=True):
         """Remove cards from the trash and give them to the specified player.
@@ -452,8 +436,8 @@ class Game:
                         self.trash.remove(t_card)
                         player.personalPlayArea.append(t_card)
 
-    # card is the name of the card that the player is gaining
-    # location is the location the cards are being added to such as the discard pile or the top of the deck
+    # card is the name of the card that the player is gaining.
+    # location is the location the cards are being added to such as the discard pile or the top of the deck.
     def gain_cards(self, player, card, location="Play Area"):
         """Gain a card from the supply and place it in the play area unless specified otherwise. Decrease the supply
         pile by one and check to make sure a card is specified"""
@@ -469,9 +453,15 @@ class Game:
                     return False
         return False
 
+    # player - The player who has to select the cards.
+    # location - The location from which the player is selecting the card(s).
+    # constraints - The constraints on the cards that the player can select. These can be type, number of, and cost.
     def select_cards(self, player, location, constraints):
-        """If player is an array, check to see if the array is long enough for the player to exist"""
-        self.buffer = [player, location, constraints]
+        """Figure out the location from which the cards are being selected from
+        Filter the cards according to the constraints
+        If player is an array, check to see if the array is long enough for the player to exist
+        Set the buffer to the selectable cards and set the inputNeededFlag"""
+
         # This function accepts an array of players and an index to specify one player so check to make sure that
         #   player exists
         if isinstance(player, list):
@@ -480,10 +470,54 @@ class Game:
             else:
                 return []
 
+        cards = ["Select"]
+        selectable_cards = []
+
+        # Set this so that the main program knows when input is needed
         self.inputNeededFlag = True
-        while self.buffer == [player, location, constraints]:  # maybe change to the player's name
-            time.sleep(5)
-        self.inputNeededFlag = False
+
+        # Set the location from where the cards are being selected
+        if location == "Hand":
+            selectable_cards = player.hand.copy()
+        elif location == "Play Area":
+            selectable_cards = player.personalPlayArea.copy()
+        elif location == "Supply":
+            selectable_cards = list(self.supplyCards.keys())
+
+        # Filter the cards according to type constraints
+        if "Victory" in constraints:
+            # Remove any card that is not a Victory card
+            for card in selectable_cards:
+                if not isinstance(card, Card.VictoryCard):
+                    selectable_cards.remove(card)
+        elif "Action" in constraints:
+            # Remove any card that is not an Action card
+            for card in selectable_cards:
+                if not isinstance(card, Card.ActionCard):
+                    selectable_cards.remove(card)
+        elif "Treasure" in constraints:
+            # Remove any card that is not a Treasure card
+            for card in selectable_cards:
+                if not isinstance(card, Card.TreasureCard):
+                    selectable_cards.remove(card)
+
+        # Filter the cards according to cost constraints
+        if "$" in constraints:
+            i = constraints.find("$")
+            cost = int(constraints[i+3:i+4])  # Just the number/cost that it has to be less than
+            # Remove cards that cost more than the specified amount
+            for card in selectable_cards:
+                if card.get_cost() > cost:
+                    selectable_cards.remove(card)
+
+        cards.append(selectable_cards)
+
+        # Add card amount constraints to the array that will be passed to the buffer so that the cards can be filtered
+        i = constraints.find("#")
+        num_constraints = constraints[i:i + 4]  # Find the constraints on the number of cards
+        cards.append(num_constraints)
+
+        self.buffer = cards
 
     def shuffle_deck(self, player, check=True):
         """Shuffle the specified player's deck."""
@@ -503,13 +537,11 @@ class Game:
         player.add_coins(amount)
 
     def ask_player(self, player, question, check=True):
-        """Ask the player a yes or no question and set their answer to self.playerAnswer"""
+        """Ask the player a yes or no question
+         Their answer should be set to self.playerAnswer"""
         if check:
-            self.playerAnswer = [player, question]
             self.inputNeededFlag = True
-            while self.playerAnswer == [player, question]:
-                time.sleep(5)
-            self.inputNeededFlag = False
+            self.buffer = ["Question", player, question]
 
     def end_turn(self):
         """Reset all variables
@@ -522,8 +554,14 @@ class Game:
         self.currentMoves = 0
         self.inputNeededFlag = False
 
+        # Clean up the current player area and set them up for the next turn
         self.currentPlayer.end_turn()
 
+        for player in self.players:
+            if len(player.personalPlayArea) > 0:
+                player.clean_up_play_area()
+
+        # Switch the current player to the next player in the array
         self.currentPlayer = self.players[(self.players.index(self.currentPlayer) + 1) % len(self.players)]
 
     def check_game_end(self):
