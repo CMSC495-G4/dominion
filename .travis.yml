@@ -24,7 +24,7 @@ deploy:
   skip_cleanup: true
   script:
     - echo "deploying..."
-    - sshpass
+    - sshpass -p $PASSWORD ssh $USER@$HOST ls -l
   on:
     branch: master
 
