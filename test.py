@@ -24,6 +24,49 @@ if __name__ == "__main__":
                 num_of_actions = game.play_card(answer)  # Try to play their selection
                 for i in range(num_of_actions):
                     game.process_block()
+                    if game.inputNeededFlag:
+                        info = game.buffer
+                        if info[0] == "Select":
+                            player_selected_cards = False
+                            while not player_selected_cards:
+                                selectable_cards = ""
+                                for card in info[1]:
+                                    selectable_cards += card.get_name()
+                                    selectable_cards += ", "
+                                selected_cards = input("Choose " + info[2] + " cards from " + selectable_cards +
+                                                       "and separate your choices with commas.")
+                                selected_cards = [x.strip() for x in selected_cards.split(",")]
+
+                                comparison_sign = info[2][1:3]
+
+                                num = info[2][3:4]
+                                if num == "H":
+                                    num = len(game.currentPlayer.hand)
+                                else:
+                                    num = int(num)
+
+                                if comparison_sign == "==":
+                                    # Check to see if the amount of selected cards is equal to the constraint number
+                                    if len(selected_cards) == num:
+                                        game.buffer = selected_cards
+                                        player_selected_cards = True
+                                        game.inputNeededFlag = False
+                                elif comparison_sign == "<=":
+                                    # Check to see if the amount of selected cards is less than the constraint number
+                                    if len(selected_cards) <= num:
+                                        game.buffer = selected_cards
+                                        player_selected_cards = True
+                                        game.inputNeededFlag = False
+
+                        elif info[0] == "Question":
+                            """"""
+                            # set inputflag
+                            # after each block, check the inputflag
+                            # if it is flagged, check the buffer
+                            # pose the question to the user
+                            # check their answer against the restrictions
+                            # set their answer to the buffer
+                            # unflag the inputflag
                 game.currentPlayer.actions -= 1
 
                 print("Middle of Action Phase ------")
@@ -55,7 +98,7 @@ if __name__ == "__main__":
                 for a_card in available_cards:
                     if a_card.get_name() == card_name:
                         found = True
-                        if game.gain_cards(game.currentPlayer, card_name):
+                        if game.gain_cards(-1, card_name):
                             coins -= a_card.get_cost()
                             game.currentPlayer.buys -= 1
                             print(card_name + " bought.")
@@ -70,6 +113,4 @@ if __name__ == "__main__":
         game.end_turn()
         print()
 
-
     game.print_game_state()
-
