@@ -38,15 +38,22 @@ if __name__ == "__main__":
                                 selected_cards = [x.strip() for x in selected_cards.split(",")]
 
                                 comparison_sign = info[2][1:3]
+
+                                num = info[2][3:4]
+                                if num == "H":
+                                    num = len(game.currentPlayer.hand)
+                                else:
+                                    num = int(num)
+
                                 if comparison_sign == "==":
                                     # Check to see if the amount of selected cards is equal to the constraint number
-                                    if len(selected_cards) == int(info[2][3:4]):
+                                    if len(selected_cards) == num:
                                         game.buffer = selected_cards
                                         player_selected_cards = True
                                         game.inputNeededFlag = False
                                 elif comparison_sign == "<=":
                                     # Check to see if the amount of selected cards is less than the constraint number
-                                    if len(selected_cards) <= int(info[2][3:4]):
+                                    if len(selected_cards) <= num:
                                         game.buffer = selected_cards
                                         player_selected_cards = True
                                         game.inputNeededFlag = False
