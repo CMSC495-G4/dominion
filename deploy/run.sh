@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd ..
+cd ..
 
 docker build -t dominion -f deploy/Dockerfile .
 
