@@ -8,7 +8,7 @@ echo -e $REMOTE_KEY > $KEY_PATH
 chmod 700 $KEY_PATH
 
 ssh -q -o "StrictHostKeyChecking no" -i $KEY_PATH $REMOTE_USER@$REMOTE_HOSTNAME bash <<EOF
-  rm -rf $REMOTE_PATH
+  sudo rm -rf $REMOTE_PATH
 EOF
 
 scp -q -r -o "StrictHostKeyChecking no" -i $KEY_PATH . $REMOTE_USER@$REMOTE_HOSTNAME:$REMOTE_PATH
