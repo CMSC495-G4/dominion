@@ -9,7 +9,7 @@ class Player:
         # Set up the player's deck
         self.deck = []
         for i in range(7):
-            self.deck.append(Card.TreasureCard("Copper", 0, "Treasure", 1))
+            self.deck.append(Card.TreasureCard("Copper", 0, "Treasure", 1))  # CHANGE TO COPPER
         for i in range(3):
             self.deck.append(Card.VictoryCard("Estate", 2, "Victory", 1))
 
@@ -82,11 +82,14 @@ class Player:
                         self.hand.remove(card)
                         removed_cards.append(card)
                         completed = True
+                        break
             elif location == "Play Area":
                 for card in self.personalPlayArea:
                     if card.get_name() == card_name:
                         self.personalPlayArea.remove(card)
+                        removed_cards.append(card)
                         completed = True
+                        break
 
         if completed:
             return True, removed_cards
@@ -155,6 +158,14 @@ class Player:
     # amount - The number of actions to add
     def add_actions(self, amount):
         self.actions += amount
+
+    # amount - The number of coins to add
+    def add_coins(self, amount):
+        self.coins += amount
+
+    # amount - The number of buys to add
+    def add_buys(self, amount):
+        self.buys += amount
 
     def get_name(self):
         return self.name
