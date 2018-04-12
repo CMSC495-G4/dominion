@@ -2,11 +2,6 @@ language: python
 python:
   - 3.6
 
-addons:
-  apt:
-    packages:
-    - sshpass
-
 install:
   - pip install -r requirements.txt
 
