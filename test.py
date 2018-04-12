@@ -11,6 +11,7 @@ if __name__ == "__main__":
     game.print_game_state()
 
     while not game.check_game_end():
+        print("BEGINNING OF TURN")
         game.print_game_state()
 
         # Action phase
@@ -37,36 +38,57 @@ if __name__ == "__main__":
                                                        "and separate your choices with commas.")
                                 selected_cards = [x.strip() for x in selected_cards.split(",")]
 
-                                comparison_sign = info[2][1:3]
+                                selected_real_cards = True
+                                for user_selected_card in selected_cards:
+                                    if user_selected_card not in selectable_cards:
+                                        selected_real_cards = False
+                                        print("That card was not in the possible selection.")
+                                        break
 
-                                num = info[2][3:4]
-                                if num == "H":
-                                    num = len(game.currentPlayer.hand)
-                                else:
-                                    num = int(num)
+                                if selected_real_cards:
+                                    comparison_sign = info[2][1:3]
 
-                                if comparison_sign == "==":
-                                    # Check to see if the amount of selected cards is equal to the constraint number
-                                    if len(selected_cards) == num:
-                                        game.buffer = selected_cards
-                                        player_selected_cards = True
-                                        game.inputNeededFlag = False
-                                elif comparison_sign == "<=":
-                                    # Check to see if the amount of selected cards is less than the constraint number
-                                    if len(selected_cards) <= num:
-                                        game.buffer = selected_cards
-                                        player_selected_cards = True
-                                        game.inputNeededFlag = False
+                                    num = info[2][3:4]
+                                    if num == "H":  # Select no more cards than there are cards in the hand
+                                        num = len(info[1])
+                                    elif num == "D":  # Select enough cards that three cards are left unselected
+                                        if len(info[1]) == 5:
+                                            num = 2
+                                        elif len(info[1]) == 4:
+                                            num = 1
+                                        else:
+                                            num = 0
+                                    else:
+                                        num = int(num)
+
+                                    if comparison_sign == "==":
+                                        # Check to see if the amount of selected cards is equal to the constraint number
+                                        if len(selected_cards) == num:
+                                            game.buffer = selected_cards
+                                            player_selected_cards = True
+                                            game.inputNeededFlag = False
+                                    elif comparison_sign == "<=":
+                                        # Check to see if the amount of selected cards is less than the constraint number
+                                        if len(selected_cards) <= num:
+                                            game.buffer = selected_cards
+                                            player_selected_cards = True
+                                            game.inputNeededFlag = False
 
                         elif info[0] == "Question":
-                            """"""
-                            # set inputflag
-                            # after each block, check the inputflag
-                            # if it is flagged, check the buffer
-                            # pose the question to the user
-                            # check their answer against the restrictions
-                            # set their answer to the buffer
-                            # unflag the inputflag
+                            question_answered = False
+                            while not question_answered:
+                                print("Answer the following question with either Yes or No.")
+                                answer = input(info[1])
+                                print()
+                                if answer == "Yes":
+                                    game.playerAnswer = True
+                                    question_answered = True
+                                    game.inputNeededFlag = False
+                                elif answer == "No":
+                                    game.playerAnswer = False
+                                    question_answered = True
+                                    game.inputNeededFlag = False
+
                 game.currentPlayer.actions -= 1
 
                 print("Middle of Action Phase ------")

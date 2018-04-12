@@ -1,7 +1,6 @@
 import Player
 import Card
 import random
-import time
 
 # Replace with database?
 allKingdomCards = [Card.ActionCard("Cellar", 2, "Action", "+1 Action, Discard any number of cards. +1 Card per card "
@@ -62,12 +61,6 @@ allKingdomCards = [Card.ActionCard("Cellar", 2, "Action", "+1 Action, Discard an
 CURRENT_PLAYER = -1
 
 
-def diff_of_list(lst1, lst2):
-    """Return a list with all occurrences of elements of lst2 removed from lst1"""
-
-    return [item for item in lst1 if item not in lst2]
-
-
 class Game:
     def __init__(self, players):
         self.supplyCards = {}
@@ -77,14 +70,13 @@ class Game:
         self.processQueue = []
         self.currentPlayer = random.choice(players)
 
-        # FIX THESE SO THE NAMES AREN'T AS CONFUSING
-        self.buffer = [""]
-        self.playerAnswer = False
-        self.playerCompletedAction = False
-        self.check = False  #
-        self.playersEligibleForAttack = []
-        self.currentMoves = 0
-        self.inputNeededFlag = False
+        self.buffer = [""]  # The way of communicating with the player. Input/output of the game is set to the buffer
+        self.playerAnswer = False  # The player's response to a question. Used for decisions that the game can't make
+        self.playerCompletedAction = False  # If the last block completed. Used for chained actions
+        self.check = False  # Used for internal checks on the type of card a card is
+        self.playersEligibleForAttack = []  # A list of players that do not have a Moat. Populated after each attack
+        self.currentMoves = 0  # Amount of times a card has been moved per card process. Used for Adventurer's effect
+        self.inputNeededFlag = False  # Signal to the function controlling the game that it requires outside input
 
         self.allKingdomActionCards = {
             "Cellar": [[self.add_actions, 1],
@@ -125,11 +117,11 @@ class Game:
 
             "Militia": [[self.add_coins, 2],
                         [self.poll_players_for_attack],
-                        [self.select_cards, 0, "Hand", "#==2"],
+                        [self.select_cards, 0, "Hand", "#==D"],
                         [self.discard_cards, 0, "Hand"],
-                        [self.select_cards, 1, "Hand", "#==2"],
+                        [self.select_cards, 1, "Hand", "#==D"],
                         [self.discard_cards, 1, "Hand"],
-                        [self.select_cards, 2, "Hand", "#==2"],
+                        [self.select_cards, 2, "Hand", "#==D"],
                         [self.discard_cards, 2, "Hand"]],
 
             "Moneylender": [[self.trash_cards, CURRENT_PLAYER, ["Copper"], "Hand"],
@@ -146,33 +138,33 @@ class Game:
                     [self.add_actions, 1],
                     [self.poll_players_for_attack],
                     [self.reveal_top_cards, CURRENT_PLAYER, 1],
-                    [self.ask_player, "Yes/No"],
+                    [self.ask_player, "Do you want the to discard the card?"],
                     [self.discard_cards, CURRENT_PLAYER, "Top of Deck", True],
                     [self.reveal_top_cards, 0, 1],
-                    [self.ask_player, "Yes/No"],
+                    [self.ask_player, "Do you want the player to discard the card?", "", 0],
                     [self.discard_cards, 0, "Top of Deck", True],
                     [self.reveal_top_cards, 1, 1],
-                    [self.ask_player, "Yes/No"],
+                    [self.ask_player, "Do you want the player to discard the card?", "", 1],
                     [self.discard_cards, 1, "Top of Deck", True],
                     [self.reveal_top_cards, 2, 1],
-                    [self.ask_player, "Yes/No"],
+                    [self.ask_player, "Do you want the player to discard the card?", "", 2],
                     [self.discard_cards, 2, "Top of Deck", True]],
 
             "Thief": [[self.poll_players_for_attack],
                       [self.put_cards_play_area, 0, 2],
                       [self.select_cards, CURRENT_PLAYER, "0 Play Area", "#<=1 Treasure", True],
                       [self.trash_cards, 0, "", "Play Area", True],
-                      [self.ask_player, "Yes/No", "Action"],
+                      [self.ask_player, "Do you want to gain the trashed card?", "Action", 0],
                       [self.give_trashed_cards, True],
                       [self.put_cards_play_area, 1, 2],
                       [self.select_cards, CURRENT_PLAYER, "1 Play Area", "#<=1 Treasure", True],
                       [self.trash_cards, 1, "", "Play Area", True],
-                      [self.ask_player, "Yes/No", "Action"],
+                      [self.ask_player, "Do you want to gain the trashed card?", "Action", 1],
                       [self.give_trashed_cards, True],
                       [self.put_cards_play_area, 2, 2],
                       [self.select_cards, CURRENT_PLAYER, "2 Play Area", "#<=1 Treasure", True],
                       [self.trash_cards, 2, "", "Play Area", True],
-                      [self.ask_player, "Yes/No", "Action"],
+                      [self.ask_player, "Do you want to gain the trashed card?", "Action", 2],
                       [self.give_trashed_cards, True]],
 
             "Throne Room": [[self.select_cards, CURRENT_PLAYER, "Hand", "#==1 Action"],
@@ -231,10 +223,12 @@ class Game:
         Add the Treasure and Victory cards to the supply"""
 
         chosen = []
-        for i in range(10):
-            rand_card = random.randint(0, 9)
+        while len(chosen) != 25:  # CHANGE THIS TO 10 WHEN DONE DEBUGGING
+            print(len(chosen))
+            rand_card = random.randint(0, 24)
             if rand_card not in chosen:
                 self.supplyCards[allKingdomCards[rand_card]] = 10  # Add all Kingdom cards to supply
+                chosen.append(rand_card)
         self.supplyCards[allKingdomCards[25]] = 60 - (len(self.players) * 7)  # Add Copper cards to supply
         self.supplyCards[allKingdomCards[26]] = 40  # Add Silver cards to supply
         self.supplyCards[allKingdomCards[27]] = 30  # Add Gold cards to supply
@@ -273,7 +267,10 @@ class Game:
     def process_block(self):
         """Process the first block in the queue."""
         block = self.processQueue.pop(0)
-        if len(block) == 2:
+
+        if len(block) == 1:
+            return block[0]()
+        elif len(block) == 2:
             return block[0](block[1])
         elif len(block) == 3:
             return block[0](block[1], block[2])
@@ -288,7 +285,6 @@ class Game:
 
     #
     # Block Functions
-    # USE THE LASTBLOCKCOMPLETED TO CHAIN THE ACTIONS TOGETHER. IF ONE FAILS, THE NEXT BLOCKS WILL CONTINUE TO FAIL
 
     # amount - The amount of cards to draw
     # player_offset - Specifies how many players to go past the current player
@@ -313,7 +309,13 @@ class Game:
 
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
+
+        if len(player.deck) < amount:
+            player.shuffle()
 
         cards = []
         for i in range(amount):
@@ -337,7 +339,10 @@ class Game:
 
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
         if hand_check:
             if 7 < player.get_hand_size():
@@ -372,7 +377,10 @@ class Game:
         if max_moves > self.currentMoves:
             player = self.currentPlayer
             if player_offset != -1:
-                player = self.playersEligibleForAttack[player_offset]
+                if player_offset < len(self.playersEligibleForAttack):
+                    player = self.playersEligibleForAttack[player_offset]
+                else:
+                    return
 
             if cards == "Buffer":
                 cards = self.buffer
@@ -392,6 +400,7 @@ class Game:
                 for aCard in allKingdomCards:
                     if aCard.get_name() == card:
                         card_object_list.append(aCard)
+                        break
 
             if loc1 == "Play Area":
                 if loc2 == "Hand":
@@ -399,27 +408,21 @@ class Game:
                         if card in player.personalPlayArea:
                             player.personalPlayArea.remove(card)
                             player.hand.append(card)
-                        else:
-                            return False
-                else:
-                    return False
             elif loc1 == "Hand":
                 if loc2 == "Play Area":
                     for card in card_object_list:
-                        if card in player.hand:
-                            player.hand.remove(card)
-                            player.personalPlayArea.append(card)
-                        else:
-                            return False
-                if loc2 == "Top of Deck":
+                        for h_card in player.hand:
+                            if card.get_name() == h_card.get_name():
+                                player.hand.remove(h_card)
+                                player.personalPlayArea.append(h_card)
+                                break
+                elif loc2 == "Top of Deck":
                     for card in card_object_list:
-                        if card in player.hand:
-                            player.hand.remove(card)
-                            player.deck.insert(0, card)
-                        else:
-                            return False
-            else:
-                return False
+                        for h_card in player.hand:
+                            if card.get_name() == h_card.get_name():
+                                player.hand.remove(h_card)
+                                player.deck.insert(0, h_card)
+                                break
 
     def check_played_card(self, c_type, check_action=False):
         """Set checked to true if the most recent played card is the right type"""
@@ -431,6 +434,7 @@ class Game:
             card = self.currentPlayer.personalPlayArea[-1]
             if card.ctype == c_type:
                 self.check = True
+                self.buffer = card
 
     # player_offset - The player who has to discard cards. If it is not -1, it is an attack and uses the attack list
     # location - The location of the cards to discard
@@ -449,7 +453,10 @@ class Game:
 
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
         self.playerCompletedAction, self.buffer = player.discard_card(cards, location)
 
@@ -460,16 +467,20 @@ class Game:
     #                   when the previous action in the chain doesn't
     def trash_cards(self, player_offset, names, location, check_action=False):
         """Add card(s) to the trash. Remove any trace of them from their previous location"""
-        self.playerCompletedAction = False
 
         if check_action:
             if not self.playerCompletedAction:
                 self.buffer = []
                 return
 
+        self.playerCompletedAction = False
+
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
         if names == "":
             names = self.buffer
@@ -484,16 +495,8 @@ class Game:
         if check_answer and not self.playerAnswer:
             return
 
-        cards = self.buffer
-
-        if not isinstance(cards, list):
-            cards = [cards]
-
-        for card in cards:
-            for t_card in self.trash:
-                if t_card.get_name() == card:
-                    self.trash.remove(t_card)
-                    self.currentPlayer.personalPlayArea.append(t_card)
+        card = self.trash.pop(0)
+        self.currentPlayer.personalPlayArea.append(card)
 
     # player_offset - The player who is gaining cards. If it is not -1, it is an attack and uses the attack list
     # card - The name of the card that the player is gaining.
@@ -510,10 +513,16 @@ class Game:
 
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
         if card == "":
             card = self.buffer
+
+        if isinstance(card, list):
+            card = card[0]
 
         for s_card in self.supplyCards.keys():
             # If the card exists in the supply, proceed
@@ -546,7 +555,10 @@ class Game:
 
         player = self.currentPlayer
         if player_offset != -1:
-            player = self.playersEligibleForAttack[player_offset]
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
         cards = ["Select"]
         selectable_cards = []
@@ -577,17 +589,17 @@ class Game:
         # Filter the cards according to type constraints
         if "Victory" in constraints:
             # Remove any card that is not a Victory card
-            for card in selectable_cards:
+            for card in reversed(selectable_cards):
                 if not isinstance(card, Card.VictoryCard):
                     selectable_cards.remove(card)
         elif "Action" in constraints:
             # Remove any card that is not an Action card
-            for card in selectable_cards:
+            for card in reversed(selectable_cards):
                 if not isinstance(card, Card.ActionCard):
                     selectable_cards.remove(card)
         elif "Treasure" in constraints:
             # Remove any card that is not a Treasure card
-            for card in selectable_cards:
+            for card in reversed(selectable_cards):
                 if not isinstance(card, Card.TreasureCard):
                     selectable_cards.remove(card)
 
@@ -602,11 +614,19 @@ class Game:
                     self.buffer = []
                     return
                 else:
+                    # Add the cost of the trashed card and the boost together
                     cost = t_card.get_cost() + int(constraints[i+5:i+6])
+            else:  # The cost is a numerical value
+                cost = int(cost)
+
             # Remove cards that cost more than the specified amount
-            for card in selectable_cards:
+            for card in reversed(selectable_cards):
                 if card.get_cost() > cost:
                     selectable_cards.remove(card)
+
+        if len(selectable_cards) == 0:
+            self.inputNeededFlag = False
+            return
 
         cards.append(selectable_cards)
 
@@ -647,9 +667,15 @@ class Game:
 
     # question - The question to ask the user
     # check_last - Toggle to check if a function completed ("Action") or a certain result of a function ("Function")
-    def ask_player(self, question, check_last=""):
+    def ask_player(self, question, check_last="", player_offset=-1):
         """Ask the current player a question
          Their answer should be set to self.playerAnswer"""
+
+        if player_offset != -1:
+            if player_offset >= len(self.playersEligibleForAttack):
+                self.playerAnswer = False
+                return
+
         if check_last == "Action":
             if not self.playerCompletedAction:
                 self.playerAnswer = False
@@ -658,6 +684,10 @@ class Game:
             if not self.check:
                 self.playerAnswer = False
                 return
+
+        if len(self.buffer) > 0:
+            if isinstance(self.buffer[0], Card.Card):
+                question += " (" + self.buffer[0].get_name() + ")"
 
         self.inputNeededFlag = True
         self.buffer = ["Question", question]
@@ -699,8 +729,12 @@ class Game:
     def poll_players_for_attack(self):
         """query self.players - self.currentPlayer
         set buffer to a list of players that have a moat"""
-        potential_players = diff_of_list(self.players, self.currentPlayer)
-        for player in potential_players:
+        potential_players = []
+        for player in self.players:
+            if player != self.currentPlayer:
+                potential_players.append(player)
+
+        for player in reversed(potential_players):
             if self.allKingdomActionCards["Moat"] in player.hand:
                 potential_players.remove(player)
         self.playersEligibleForAttack = potential_players
@@ -722,12 +756,14 @@ class Game:
         for player in self.players:
             print(player)
         print()
+        print("Trash: ", end='')
         for card in self.trash:
             print(card, end='')
         print()
         for card in self.playArea:
             print(card, end='')
         print()
+        print("Process Queue: ", end='')
         print(self.processQueue)
         print(self.currentPlayer.name)
         print("********************************")
