@@ -23,8 +23,8 @@ deploy:
   provider: script
   skip_cleanup: true
   script:
-    - echo "deploying..."
-    - sshpass -p $REMOTE_PASSWORD ssh $REMOTE_USER@$REMOTE_HOSTNAME ls -l
+    - echo -e $REMOTE_KEY > /tmp/key
+    - ssh -i /tmp/key $REMOTE_USER@$REMOTE_HOSTNAME ls -l
   on:
     branch: master
 
