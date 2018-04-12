@@ -17,9 +17,7 @@ script:
 deploy:
   provider: script
   skip_cleanup: true
-  script:
-    - echo -e $REMOTE_KEY > /tmp/key
-    - ssh -i /tmp/key $REMOTE_USER@$REMOTE_HOSTNAME ls -l
+  script: bash deploy/deploy.sh
   on:
     branch: master
 
