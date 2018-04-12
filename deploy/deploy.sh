@@ -3,6 +3,7 @@
 KEY_PATH=/tmp/key
 REMOTE_PATH=/home/$REMOTE_USER/dominion
 
+rm -rf coverage.xml __pycache__
 echo -e $REMOTE_KEY > $KEY_PATH
 chmod 700 $KEY_PATH
 
