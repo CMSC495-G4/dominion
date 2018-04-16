@@ -70,33 +70,26 @@ class Player:
         if not isinstance(names, list):
             names = [names]
 
+        card_objects = []
         if location == "Hand":
-            for card_name in names:
-                completed = False
-                for card in self.hand:
-                    if card.get_name() == card_name:
-                        self.hand.remove(card)
-                        removed_cards.append(card)
-                        completed = True
-                        break
+            card_objects = self.hand
         elif location == "Play Area":
-            for card_name in names:
-                completed = False
-                for card in self.personalPlayArea:
-                    if card.get_name() == card_name:
-                        self.personalPlayArea.remove(card)
-                        removed_cards.append(card)
-                        completed = True
-                        break
+            card_objects = self.personalPlayArea
+
+        for card_name in names:
+            completed = False
+            for card in card_objects:
+                if card.get_name() == card_name:
+                    card_objects.remove(card)
+                    removed_cards.append(card)
+                    completed = True
+                    break
 
         if completed:
             return True, removed_cards
         else:
             # Add the removed cards back to their location so it can be retried
-            if location == "Hand":
-                self.hand += removed_cards
-            elif location == "Play Area":
-                self.personalPlayArea += removed_cards
+            card_objects += removed_cards
             return False, []
 
     # names - The names of the cards to discard
