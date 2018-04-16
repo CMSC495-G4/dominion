@@ -1,29 +1,36 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout as auth_logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from .forms import LoginForm, SignupForm
 
 def index(request):
-    return render(request, 'core/index.html')
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        login(request, form.get_user())
+        return redirect('index')
+    else:
+        return render(request, 'core/index.html', {'form': LoginForm()})
 
 def about(request):
     return render(request, 'core/about.html')
+
+def reset_password(request):
+    return render(request, 'core/reset-password.html')
 
 def rules(request):
     return render(request, 'core/rules.html')
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('raw_password')
-            user = authenticate(username=username, password=password)
+            user = form.save()
             login(request, user)
             return redirect('index')
     else:
-        form = UserCreationForm()
+        form = SignupForm()
+
     return render(request, 'core/signup.html', {'form': form})
 
 def history(request):
@@ -34,3 +41,7 @@ def profile(request):
 
 def play(request):
     return HttpResponse('Play placeholder')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('index')

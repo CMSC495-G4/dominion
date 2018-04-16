@@ -1,0 +1,16 @@
+/**
+  * Bootstrap Theme Overrides
+  */
+
+
+/* Ensure lists are displayed properly in tooltips */
+.tooltip ol,
+.tooltip ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.tooltip ol li,
+.tooltip ul li {
+  padding-left: 0;
+}

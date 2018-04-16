@@ -1,5 +1,6 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -9,4 +10,5 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('history/', views.history, name='history'),
     path('play/', views.play, name='play'),
+    path('logout/', views.logout),
 ]
