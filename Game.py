@@ -189,7 +189,7 @@ class Game:
             "Library": [[self.put_cards_play_area, CURRENT_PLAYER, 1, True],
                         [self.check_played_card, "Action", True],
                         [self.ask_player, "Do you want to set aside the Action card?", "Function"],
-                        [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Played", 100, True, True],
+                        [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Played", True, True],
                         [self.add_card_blocks, "Library", False, True]],
 
             "Market": [[self.draw_cards, 1],
