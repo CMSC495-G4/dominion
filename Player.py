@@ -70,16 +70,18 @@ class Player:
         if not isinstance(names, list):
             names = [names]
 
-        for card_name in names:
-            completed = False  # If there are multiple cards, this field resets in case one fails
-            if location == "Hand":
+        if location == "Hand":
+            for card_name in names:
+                completed = False
                 for card in self.hand:
                     if card.get_name() == card_name:
                         self.hand.remove(card)
                         removed_cards.append(card)
                         completed = True
                         break
-            elif location == "Play Area":
+        elif location == "Play Area":
+            for card_name in names:
+                completed = False
                 for card in self.personalPlayArea:
                     if card.get_name() == card_name:
                         self.personalPlayArea.remove(card)
