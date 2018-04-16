@@ -23,7 +23,7 @@ if __name__ == "__main__":
                 break
             else:
                 num_of_actions = game.play_card(answer)  # Try to play their selection
-                for i in range(num_of_actions):
+                while len(game.processQueue) != 0:
                     game.process_block()
                     if game.inputNeededFlag:
                         info = game.buffer

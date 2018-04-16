@@ -9,7 +9,7 @@ class Player:
         # Set up the player's deck
         self.deck = []
         for i in range(7):
-            self.deck.append(Card.TreasureCard("Copper", 0, "Treasure", 1))  # CHANGE TO COPPER
+            self.deck.append(Card.TreasureCard("Gold", 6, "Treasure", 3))  # CHANGE TO COPPER
         for i in range(3):
             self.deck.append(Card.VictoryCard("Estate", 2, "Victory", 1))
 

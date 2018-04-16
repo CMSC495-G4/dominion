@@ -73,7 +73,7 @@ class Game:
         self.buffer = [""]  # The way of communicating with the player. Input/output of the game is set to the buffer
         self.playerAnswer = False  # The player's response to a question. Used for decisions that the game can't make
         self.playerCompletedAction = False  # If the last block completed. Used for chained actions
-        self.check = False  # Used for internal checks on the type of card a card is
+        self.check = False  # Used for internal checks on the type of card a card is (Only set by check_played_card)
         self.playersEligibleForAttack = []  # A list of players that do not have a Moat. Populated after each attack
         self.currentMoves = 0  # Amount of times a card has been moved per card process. Used for Adventurer's effect
         self.inputNeededFlag = False  # Signal to the function controlling the game that it requires outside input
@@ -168,8 +168,8 @@ class Game:
                       [self.give_trashed_cards, True]],
 
             "Throne Room": [[self.select_cards, CURRENT_PLAYER, "Hand", "#==1 Action"],
-                            [self.add_card_blocks, "Buffer"],
-                            [self.add_card_blocks, "Buffer"]],
+                            [self.add_card_blocks, "Buffer", False, False, True],
+                            [self.add_card_blocks, "Buffer", False, False, True]],
 
             "Council Room": [[self.draw_cards, 1, 1],
                              [self.draw_cards, 1, 2],
@@ -189,7 +189,7 @@ class Game:
             "Library": [[self.put_cards_play_area, CURRENT_PLAYER, 1, True],
                         [self.check_played_card, "Action", True],
                         [self.ask_player, "Do you want to set aside the Action card?", "Function"],
-                        [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Play Area", True, True],
+                        [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Played", 100, True, True],
                         [self.add_card_blocks, "Library", False, True]],
 
             "Market": [[self.draw_cards, 1],
@@ -200,7 +200,7 @@ class Game:
             "Mine": [[self.select_cards, CURRENT_PLAYER, "Hand", "#==1 Treasure"],
                      [self.trash_cards, CURRENT_PLAYER, "", "Hand"],
                      [self.select_cards, CURRENT_PLAYER, "Supply", "#==1 $<=T+3 Treasure", True],
-                     [self.gain_cards, CURRENT_PLAYER, "", "Play Area",True]],
+                     [self.gain_cards, CURRENT_PLAYER, "", "Play Area", True]],
 
             "Witch": [[self.draw_cards, 2],
                       [self.poll_players_for_attack],
@@ -210,7 +210,7 @@ class Game:
 
             "Adventurer": [[self.put_cards_play_area, CURRENT_PLAYER, 1],
                            [self.check_played_card, "Treasure", True],
-                           [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Play Area", 2, True],
+                           [self.move_cards, CURRENT_PLAYER, "Play Area", "Hand", "Most Recent Played", True],
                            [self.add_card_blocks, "Adventurer", True]]
         }
 
@@ -246,14 +246,19 @@ class Game:
         self.playerCompletedAction = False  # CHANGE OTHER METHODS TO CHANGE THIS TO TRUE WHEN THEY COMPLETE
         return num_of_actions
 
-    def add_card_blocks(self, name, check_moves=False, check_hand=False):
+    def add_card_blocks(self, name, check_moves=False, check_hand=False, check_action=False):
         """Query database for list of actions
         Split actions into individual actions
         Add each action with the appropriate arguments to the queue
         Return the amount of actions found"""
-        if check_moves and 2 < self.currentMoves:
-            return
+        if check_moves:
+            # It checks for 3 moves because one move is used for when the Action card is moved from the hand to the
+            #   play area.
+            if not self.playerCompletedAction or 3 == self.currentMoves:
+                return
         if check_hand and 7 <= self.currentPlayer.get_hand_size():
+            return
+        if check_action and not self.playerCompletedAction:
             return
 
         if name == "Buffer":
@@ -282,6 +287,8 @@ class Game:
             return block[0](block[1], block[2], block[3], block[4], block[5])
         elif len(block) == 7:
             return block[0](block[1], block[2], block[3], block[4], block[5], block[6])
+        elif len(block) == 8:
+            return block[0](block[1], block[2], block[3], block[4], block[5], block[6], block[7])
 
     #
     # Block Functions
@@ -298,7 +305,8 @@ class Game:
         if player_offset == 0:
             return self.currentPlayer.draw_card(amount)
         else:
-            self.players[(self.players.index(self.currentPlayer) + player_offset) % len(self.players)].draw_card(amount)
+            if len(self.players) > player_offset:
+                self.players[(self.players.index(self.currentPlayer) + player_offset) % len(self.players)].draw_card(amount)
 
     # player_offset - Specifies how many players to go past the current player
     def reveal_top_cards(self, player_offset, amount):
@@ -357,14 +365,14 @@ class Game:
 
             # Make sure the deck hasn't been exhausted
             if len(player.deck) != 0:
-                card = player.deck.pop()
+                card = player.deck.pop(0)
                 player.personalPlayArea.append(card)
                 self.playerCompletedAction = True
             else:
                 break
 
     # player_offset - The player who has to discard cards. If it is not -1, it is an attack and uses the attack list
-    def move_cards(self, player_offset, loc1, loc2, cards, max_moves=100, check_checked=False, check_answer=False):
+    def move_cards(self, player_offset, loc1, loc2, cards, check_checked=False, check_answer=False):
         """Move cards from location 1 to location 2 if check is true and currentMoves isn't greater
         than maxmoves"""
         if check_checked:
@@ -374,55 +382,56 @@ class Game:
             elif not self.check:
                 return
 
-        if max_moves > self.currentMoves:
-            player = self.currentPlayer
-            if player_offset != -1:
-                if player_offset < len(self.playersEligibleForAttack):
-                    player = self.playersEligibleForAttack[player_offset]
-                else:
-                    return
+        player = self.currentPlayer
+        if player_offset != -1:
+            if player_offset < len(self.playersEligibleForAttack):
+                player = self.playersEligibleForAttack[player_offset]
+            else:
+                return
 
-            if cards == "Buffer":
-                cards = self.buffer
-            elif cards == "Most Recent Play Area":  # The card is the most recently played one
-                cards = player.personalPlayArea[-1]
+        if cards == "Buffer":
+            cards = self.buffer
+        elif cards == "Most Recent Played":  # The card is the most recently played one
+            cards = player.personalPlayArea[-1]
 
-            card_object_list = []
-            # If only a single card is specified, make it into an array so the code treat it like an array
-            if not isinstance(cards, list):
-                cards = [cards]
-            for card in cards:
-                #
-                if isinstance(card, Card.Card):
-                    card_object_list = cards
+        card_object_list = []
+        # If only a single card is specified, make it into an array so the code treat it like an array
+        if not isinstance(cards, list):
+            cards = [cards]
+        for card in cards:
+            #
+            if isinstance(card, Card.Card):
+                card_object_list = cards
+                break
+            # Find the corresponding card object for all of the card names
+            for aCard in allKingdomCards:
+                if aCard.get_name() == card:
+                    card_object_list.append(aCard)
                     break
-                # Find the corresponding card object for all of the card names
-                for aCard in allKingdomCards:
-                    if aCard.get_name() == card:
-                        card_object_list.append(aCard)
-                        break
 
-            if loc1 == "Play Area":
-                if loc2 == "Hand":
-                    for card in card_object_list:
-                        if card in player.personalPlayArea:
-                            player.personalPlayArea.remove(card)
-                            player.hand.append(card)
-            elif loc1 == "Hand":
-                if loc2 == "Play Area":
-                    for card in card_object_list:
-                        for h_card in player.hand:
-                            if card.get_name() == h_card.get_name():
-                                player.hand.remove(h_card)
-                                player.personalPlayArea.append(h_card)
-                                break
-                elif loc2 == "Top of Deck":
-                    for card in card_object_list:
-                        for h_card in player.hand:
-                            if card.get_name() == h_card.get_name():
-                                player.hand.remove(h_card)
-                                player.deck.insert(0, h_card)
-                                break
+        if loc1 == "Play Area":
+            if loc2 == "Hand":
+                for card in card_object_list:
+                    if card in player.personalPlayArea:
+                        player.personalPlayArea.remove(card)
+                        player.hand.append(card)
+        elif loc1 == "Hand":
+            if loc2 == "Play Area":
+                for card in card_object_list:
+                    for h_card in player.hand:
+                        if card.get_name() == h_card.get_name():
+                            player.hand.remove(h_card)
+                            player.personalPlayArea.append(h_card)
+                            break
+            elif loc2 == "Top of Deck":
+                for card in card_object_list:
+                    for h_card in player.hand:
+                        if card.get_name() == h_card.get_name():
+                            player.hand.remove(h_card)
+                            player.deck.insert(0, h_card)
+                            break
+
+        self.currentMoves += 1
 
     def check_played_card(self, c_type, check_action=False):
         """Set checked to true if the most recent played card is the right type"""
@@ -432,9 +441,9 @@ class Game:
         self.check = False
         if len(self.currentPlayer.personalPlayArea) >= 1:
             card = self.currentPlayer.personalPlayArea[-1]
-            if card.ctype == c_type:
+            if card.c_type == c_type:
                 self.check = True
-                self.buffer = card
+                self.buffer = [card]
 
     # player_offset - The player who has to discard cards. If it is not -1, it is an attack and uses the attack list
     # location - The location of the cards to discard
