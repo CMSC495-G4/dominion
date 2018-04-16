@@ -46,21 +46,17 @@ class Player:
     def draw_card(self, amount):
         """Move cards from the beginning of the deck and add it to the hand."""
 
-        added_cards = []
+        # If there are not enough cards in either the deck or draw piles, draw the maximum amount of cards
+        if len(self.deck) + len(self.discard) < amount:
+            self.draw_card(len(self.deck) + len(self.discard))
+        # If the deck is merely out of cards, shuffle the discard pile and add it to the deck
+        elif len(self.deck) < amount:
+            self.shuffle()
 
+        # Move the specified amount of cards from the deck to the hand
         for i in range(amount):
-            # The top of the deck will be the beginning of the list
-            # If the deck is empty, shuffle the discard to make it the deck
-            if len(self.deck) == 0 and len(self.discard) != 0:
-                self.shuffle()
-
-            # Check to make sure the deck has not been exhausted for this turn
-            if len(self.deck) != 0:
-                card = self.deck.pop(0)
-                self.hand.append(card)
-                added_cards.append(card)
-
-        return added_cards
+            card = self.deck.pop(0)
+            self.hand.append(card)
 
     # names - The names of the cards to remove
     # location - The location of the cards to remove
@@ -74,28 +70,26 @@ class Player:
         if not isinstance(names, list):
             names = [names]
 
+        card_objects = []
+        if location == "Hand":
+            card_objects = self.hand
+        elif location == "Play Area":
+            card_objects = self.personalPlayArea
+
         for card_name in names:
-            completed = False  # If there are multiple cards, this field resets in case one fails
-            if location == "Hand":
-                for card in self.hand:
-                    if card.get_name() == card_name:
-                        self.hand.remove(card)
-                        removed_cards.append(card)
-                        completed = True
-            elif location == "Play Area":
-                for card in self.personalPlayArea:
-                    if card.get_name() == card_name:
-                        self.personalPlayArea.remove(card)
-                        completed = True
+            completed = False
+            for card in card_objects:
+                if card.get_name() == card_name:
+                    card_objects.remove(card)
+                    removed_cards.append(card)
+                    completed = True
+                    break
 
         if completed:
             return True, removed_cards
         else:
             # Add the removed cards back to their location so it can be retried
-            if location == "Hand":
-                self.hand += removed_cards
-            elif location == "Play Area":
-                self.personalPlayArea += removed_cards
+            card_objects += removed_cards
             return False, []
 
     # names - The names of the cards to discard
@@ -148,13 +142,21 @@ class Player:
         """Take the cards in the discard pile, add them to the deck, shuffle them, and make them the new deck.
         Clear the discard pile."""
 
+        random.shuffle(self.discard)
         self.deck += self.discard
-        random.shuffle(self.deck)
         self.discard = []
 
     # amount - The number of actions to add
     def add_actions(self, amount):
         self.actions += amount
+
+    # amount - The number of coins to add
+    def add_coins(self, amount):
+        self.coins += amount
+
+    # amount - The number of buys to add
+    def add_buys(self, amount):
+        self.buys += amount
 
     def get_name(self):
         return self.name
@@ -203,5 +205,5 @@ class Player:
         self.draw_card(5)
 
     def clean_up_play_area(self):
-        self.discard += self.personalPlayArea # Discard any cards that were used or gained this turn
+        self.discard += self.personalPlayArea  # Discard any cards that were used or gained this turn
         self.personalPlayArea = []
