@@ -9,7 +9,7 @@ class Player:
         # Set up the player's deck
         self.deck = []
         for i in range(7):
-            self.deck.append(Card.TreasureCard("Gold", 6, "Treasure", 3))  # CHANGE TO COPPER
+            self.deck.append(Card.TreasureCard("Copper", 0, "Treasure", 1))
         for i in range(3):
             self.deck.append(Card.VictoryCard("Estate", 2, "Victory", 1))
 
@@ -46,21 +46,17 @@ class Player:
     def draw_card(self, amount):
         """Move cards from the beginning of the deck and add it to the hand."""
 
-        added_cards = []
+        # If there are not enough cards in either the deck or draw piles, draw the maximum amount of cards
+        if len(self.deck) + len(self.discard) < amount:
+            self.draw_card(len(self.deck) + len(self.discard))
+        # If the deck is merely out of cards, shuffle the discard pile and add it to the deck
+        elif len(self.deck) < amount:
+            self.shuffle()
 
+        # Move the specified amount of cards from the deck to the hand
         for i in range(amount):
-            # The top of the deck will be the beginning of the list
-            # If the deck is empty, shuffle the discard to make it the deck
-            if len(self.deck) == 0 and len(self.discard) != 0:
-                self.shuffle()
-
-            # Check to make sure the deck has not been exhausted for this turn
-            if len(self.deck) != 0:
-                card = self.deck.pop(0)
-                self.hand.append(card)
-                added_cards.append(card)
-
-        return added_cards
+            card = self.deck.pop(0)
+            self.hand.append(card)
 
     # names - The names of the cards to remove
     # location - The location of the cards to remove
@@ -151,8 +147,8 @@ class Player:
         """Take the cards in the discard pile, add them to the deck, shuffle them, and make them the new deck.
         Clear the discard pile."""
 
+        random.shuffle(self.discard)
         self.deck += self.discard
-        random.shuffle(self.deck)
         self.discard = []
 
     # amount - The number of actions to add
@@ -214,5 +210,5 @@ class Player:
         self.draw_card(5)
 
     def clean_up_play_area(self):
-        self.discard += self.personalPlayArea # Discard any cards that were used or gained this turn
+        self.discard += self.personalPlayArea  # Discard any cards that were used or gained this turn
         self.personalPlayArea = []
