@@ -1,10 +1,11 @@
-
-{% extends 'core/base.html' %}
+{% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-  <div class="container text-center">
 
-      <h1 class="display-4">Sign up</h1>
+  <div class="jumbotron jumbotron-fluid main-bg m-0" style="background-image: url({% static 'core/images/castle.jpg' %})">
+    <div class="container text-center text-light">
+      <h1 class="display-4">Sign Up</h1>
       <form method="post" class="login-form mt-3 ">
         {% csrf_token %}
         {% for field in form %}
@@ -16,7 +17,12 @@
             {{ field }}
 
             {% for error in field.errors %}
-              <p class="text-danger">{{ error }}</p>
+              <div class="alert alert-danger alert-dismissible text-left small" role="alert">
+                {{ error }}
+                <button type="button" class="close p-2" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
             {% endfor %}
           </p>
         {% endfor %}
@@ -24,5 +30,6 @@
           Sign up
         </button>
       </form>
+    </div>
   </div>
 {% endblock %}

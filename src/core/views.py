@@ -1,27 +1,20 @@
-from django.contrib.auth import authenticate, login, logout as auth_logout
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth import login
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 from .forms import LoginForm, SignupForm
 
+
 def index(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        login(request, form.get_user())
-        return redirect('index')
+    if not request.user.is_authenticated:
+        return redirect('login')
     else:
-        return render(request, 'core/index.html', {'form': LoginForm()})
+        return render(request, 'core/index.html')
 
-def about(request):
-    return render(request, 'core/about.html')
-
-def reset_password(request):
-    return render(request, 'core/reset-password.html')
-
-def rules(request):
-    return render(request, 'core/rules.html')
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -33,15 +26,22 @@ def signup(request):
 
     return render(request, 'core/signup.html', {'form': form})
 
+
+def about(request):
+    return render(request, 'core/about.html')
+
+
+def rules(request):
+    return render(request, 'core/rules.html')
+
+
 def history(request):
     return HttpResponse('History placeholder')
+
 
 def profile(request):
     return HttpResponse('Profile placeholder')
 
+
 def play(request):
     return HttpResponse('Play placeholder')
-
-def logout(request):
-    auth_logout(request)
-    return redirect('index')
