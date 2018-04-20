@@ -1,7 +1,9 @@
 from django.contrib.auth import login
 from django.http import HttpResponse
+from django.views import generic
 from django.shortcuts import redirect, render, reverse
 from .forms import LoginForm, SignupForm
+from .models import GameHistory
 
 
 def index(request):
@@ -45,3 +47,8 @@ def profile(request):
 
 def play(request):
     return HttpResponse('Play placeholder')
+
+
+class GameHistoryListView(generic.ListView):
+    model = GameHistory
+
