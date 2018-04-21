@@ -1,21 +1,37 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="display-4">Game History</h1>
 
-{% if game_history_list %}
-<table class="table">
-    {% for game in game_history_list %}
-    <tr>
-        <td>{{ game.player_1 }}</td>
-        <td>{{ game.player_2 }}</td>
-        <td>{{ game.winner }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% else $}
-<p>No history is available.</p>
-{% endif $
+<div class="container mt-4">
+    <h1 class="display-4 text-center">Match History</h1>
+    {% if game_history %}
+    <table class="table table-striped table-hover  mt-4">
+        <thead class="thead-dark">
+            <tr>
+                <th>Player One</th>
+                <th>Player Two</th>
+                <th>Winner</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in game_history %}
+            <tr>
+                <td>{{ game.player_1 }}</td>
+                <td>{{ game.player_2 }}</td>
+                <td>{{ game.winner }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    {% else %}
+        <p class="lead text-center">No history is available.</p>
+    {% endif %}
+
+</div>
+
+
+
 
 {% endblock %}
 

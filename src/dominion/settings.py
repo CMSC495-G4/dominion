@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+IN_PRODUCTION = os.getenv('production') == 'true'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'jc$^l(ag(l^10$n__my9$p*urpg6u09fr0_1s!rh%ilh#-!_(m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('production') != 'true'
+DEBUG = not IN_PRODUCTION
 
 ALLOWED_HOSTS = [
     'test-no.de',
@@ -125,4 +127,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 LOGIN_REDIRECT_URL = '/'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+if not IN_PRODUCTION:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_USE_TLS = True
+    EMAIL_HOST = os.getenv('email_host')
+    EMAIL_HOST_USER = os.getenv('email_host_user')
+    EMAIL_HOST_PASSWORD = os.getenv('email_host_password')
+    EMAIL_PORT = 587
+

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+  <div class="jumbotron jumbotron-fluid main-bg m-0" style="background-image: url({% static 'core/images/castle.jpg' %})">
+    <div class="container text-center text-light">
+      <h1 class="display-4">{{ user }}'s profile</h1>
+      <form method="post" class="login-form mt-3 text-left bg-dark p-4" style="background-opacity: 0.5">
+        {% csrf_token %}
+        {% for field in form %}
+          <p>
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+            </label>
+
+            {{ field }}
+
+            {% for error in field.errors %}
+              <div class="alert alert-danger alert-dismissible text-left small" role="alert">
+                {{ error }}
+                <button type="button" class="close p-2" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </p>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -2,7 +2,13 @@
 
 {% block content %}
 
-Welcome, {{ user }}
+<div class="container mt-4 text-center">
+    <h1 class="display-4 mb-2">Hello {{ user }}!</h1>
+
+    <a href="{% url 'play' %}" class="btn btn-primary">
+        Join a Game
+    </a>
+</div>
 
 {% endblock %}
 

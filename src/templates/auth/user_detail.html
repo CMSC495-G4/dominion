@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+  <div class="jumbotron jumbotron-fluid main-bg m-0" style="background-image: none; background-color: #fafafa;">
+    <div class="container text-center text-dark bg-light">
+      <h1 class="display-4">{{ user }}'s profile</h1>
+
+      <ul class="text-left">
+        <li>
+          <a href="{% url 'change_password' %}">Change my password</a>
+        </li>
+        <li>
+          <a href="{% url 'change_email' %}">Change my email</a>
+        </li>
+
+      </ul>
+
+
+    </div>
+  </div>
+{% endblock %}

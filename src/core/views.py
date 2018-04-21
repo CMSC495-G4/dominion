@@ -1,9 +1,8 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.views import generic
 from django.shortcuts import redirect, render, reverse
-from .forms import LoginForm, SignupForm
+from .forms import SignupForm, UserProfileForm
 from .models import GameHistory
 
 
@@ -36,18 +35,28 @@ def rules(request):
     return render(request, 'core/rules.html')
 
 
-def history(request):
-    return HttpResponse('History placeholder')
-
-
-def profile(request):
-    return HttpResponse('Profile placeholder')
-
-
+@login_required(login_url='login')
 def play(request):
-    return HttpResponse('Play placeholder')
+    return render(request, 'core/play.html')
+
+
+@login_required(login_url='login')
+def profile(request):
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = UserProfileForm()
+
+    return render(request, 'core/profile.html', {'form': form})
 
 
 class GameHistoryListView(generic.ListView):
     model = GameHistory
+    context_object_name = 'game_history'
 
+    def get_queryset(self):
+        return GameHistory.objects.all()
