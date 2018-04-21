@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views import generic
 from django.shortcuts import redirect, render, reverse
@@ -6,11 +7,9 @@ from .forms import LoginForm, SignupForm
 from .models import GameHistory
 
 
+@login_required(login_url='login')
 def index(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    else:
-        return render(request, 'core/index.html')
+    return render(request, 'core/index.html')
 
 
 def signup(request):
