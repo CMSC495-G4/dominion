@@ -15,11 +15,13 @@
         </thead>
         <tbody>
             {% for game in game_history %}
+            {% if game.player_1.id is user.id or game.player_2.id is user.id %}
             <tr>
                 <td>{{ game.player_1 }}</td>
                 <td>{{ game.player_2 }}</td>
                 <td>{{ game.winner }}</td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
 

@@ -1,5 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.views import generic
 from django.shortcuts import redirect, render, reverse
 from .forms import SignupForm, UserProfileForm
@@ -60,3 +61,4 @@ class GameHistoryListView(generic.ListView):
 
     def get_queryset(self):
         return GameHistory.objects.all()
+
