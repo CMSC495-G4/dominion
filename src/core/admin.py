@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import GameHistory
+from .models import Game
 
-
-@admin.register(GameHistory)
-class GameHistoryAdmin(admin.ModelAdmin):
+@admin.register(Game)
+class GameAdmin(admin.ModelAdmin):
     list_display = ('player_1', 'player_2', 'winner')

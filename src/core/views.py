@@ -1,10 +1,19 @@
+import json
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.views import generic
+from django.http import HttpResponse
 from django.shortcuts import redirect, render, reverse
 from .forms import SignupForm, UserProfileForm
-from .models import GameHistory
+from .models import Game
+
+
+def json_response(data):
+    response = HttpResponse(json.dumps(data))
+    response['Content-Type'] = 'application/json'
+    return response
 
 
 @login_required(login_url='login')
@@ -37,8 +46,65 @@ def rules(request):
 
 
 @login_required(login_url='login')
+def api_player(request, id):
+    try:
+        player = list(User.objects.all()
+            .filter(id=id)
+            .values('id', 'username'))[0]
+        return json_response(player)
+    except User.DoesNotExist:
+        return json_response(None)
+    
+
+@login_required(login_url='login')
+def api_games(request):
+    games = list(Game.objects.all()\
+        .values('id', 'player_1', 'player_2', 'winner'))
+
+    return json_response(games)
+
+@login_required(login_url='login')
+def play_session(request, id):
+    try:
+        game = Game.objects.get(id=id)
+        if game.winner is None:
+            return HttpResponse(f'We are live! Session id: {id}')
+        else:
+            return HttpReponse('The game is done.')
+
+    except Game.DoesNotExist:
+        return HttpResponse(f'No game exists with that id!')
+    
+
+@login_required(login_url='login')
 def play(request):
-    return render(request, 'core/play.html')
+    user = request.user
+    
+    # retrieve all games
+    games = Game.objects.all()
+
+    # try to find an open game (player_2 and winner are None)
+    # if we have found one, then redirect the user
+    # to that game
+    try:
+        open_game = games.get(player_2=None, winner=None)
+        if open_game.player_1 == user:
+            return render(request, 'core/play.html', {
+                'game_id': open_game.id
+            })
+            
+        else:
+            open_game.player_2 = user
+            open_game.save()
+            return redirect('play_session', id=open_game.id)
+
+    # otherwise, create a new game
+    except Game.DoesNotExist:
+        new_game = Game(player_1=user)
+        new_game.save()
+        return render(request, 'core/play.html', {
+            'game_id': new_game.id
+        })
 
 
 @login_required(login_url='login')
@@ -55,10 +121,10 @@ def profile(request):
     return render(request, 'core/profile.html', {'form': form})
 
 
-class GameHistoryListView(generic.ListView):
-    model = GameHistory
-    context_object_name = 'game_history'
+class GameListView(generic.ListView):
+    model = Game
+    context_object_name = 'games'
 
     def get_queryset(self):
-        return GameHistory.objects.all()
+        return Game.objects.all()
 

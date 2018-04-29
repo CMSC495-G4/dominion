@@ -4,12 +4,20 @@ from . import forms, views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('api/games/', views.api_games, name='api_games'),
+    path('api/player/<id>', views.api_player, name='api_player'),
+
     path('rules/', views.rules, name='rules'),
     path('about/', views.about, name='about'),
+
+    # lobby
     path('play/', views.play, name='play'),
+    
+    # game session (same as history id, reused for channels)
+    path('play/<id>', views.play_session, name='play_session'),
 
     path('profile/', views.profile, name='profile'),
-    path('history/', views.GameHistoryListView.as_view(), name='history'),
+    path('history/', views.GameListView.as_view(), name='history'),
 
     # login/logout/registration forms
     path('login/', auth_views.login, {'authentication_form': forms.LoginForm}, name='login'),

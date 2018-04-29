@@ -14,7 +14,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for game in game_history %}
+            {% for game in games %}
             {% if game.player_1.id is user.id or game.player_2.id is user.id %}
             <tr>
                 <td>{{ game.player_1 }}</td>
@@ -24,15 +24,11 @@
             {% endif %}
             {% endfor %}
         </tbody>
-
     </table>
     {% else %}
         <p class="lead text-center">No history is available.</p>
     {% endif %}
-
 </div>
-
-
 
 
 {% endblock %}

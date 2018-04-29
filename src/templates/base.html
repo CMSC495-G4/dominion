@@ -82,6 +82,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.js"></script>
     <script src="{% static 'core/js/app.js' %}"></script>
-    <script src="{% static 'core/js/icons.js' %}" defer></script>
+    {% block additional_scripts %}{% endblock %}
+    
+
   </body>
 </html>
