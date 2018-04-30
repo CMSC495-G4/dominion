@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-4 text-center">
+    <h1 class="display-4 mb-2">Starting game...</h1>
+</div>
+
+{% endblock %}
+
+{% block additional_scripts %}
+    <script>window.gameId = {{ game_id }};</script>
+    <script>window.userId = {{ user.id }};</script>
+    <script src="{% static 'core/js/game.js' %}"></script>
+{% endblock %}
+
