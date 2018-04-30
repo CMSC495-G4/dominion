@@ -54,7 +54,7 @@ def api_player(request, id):
         return json_response(player)
     except User.DoesNotExist:
         return json_response(None)
-    
+
 
 @login_required(login_url='login')
 def api_games(request):
@@ -68,18 +68,18 @@ def play_session(request, id):
     try:
         game = Game.objects.get(id=id)
         if game.winner is None:
-            return HttpResponse(f'We are live! Session id: {id}')
+            return render(request, 'core/play_session.html', {
+                'game_id': game.id
+            })
         else:
-            return HttpReponse('The game is done.')
-
+            return redirect('index')
     except Game.DoesNotExist:
-        return HttpResponse(f'No game exists with that id!')
-    
+        return redirect('index')
 
 @login_required(login_url='login')
 def play(request):
     user = request.user
-    
+
     # retrieve all games
     games = Game.objects.all()
 
@@ -92,7 +92,7 @@ def play(request):
             return render(request, 'core/play.html', {
                 'game_id': open_game.id
             })
-            
+
         else:
             open_game.player_2 = user
             open_game.save()
