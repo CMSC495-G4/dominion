@@ -8,9 +8,4 @@ python3.6 manage.py collectstatic --noinput
 
 chown -R apache:apache /deploy
 
-
-mod_wsgi-express start-server dominion/wsgi.py \
-  --user apache \
-  --group apache \
-  --port 80 \
-  --url-alias /static static/ ## need trailing slash for directory
+python3.6 manage.py runserver 0:80
