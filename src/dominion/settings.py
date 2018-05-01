@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'jc$^l(ag(l^10$n__my9$p*urpg6u09fr0_1s!rh%ilh#-!_(m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not IN_PRODUCTION
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'test-no.de',
@@ -60,6 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
