@@ -67,10 +67,22 @@ def api_games(request):
 def play_session(request, id):
     try:
         game = Game.objects.get(id=id)
+        user = request.user
+
+        # delete any other sessions the player might be in
+        Game.objects.filter(
+            Q(player_1=user) | Q(player_2=user),
+            Q(winner=None),
+            ~ Q(id=game.id)
+        ).delete()
+
         if game.winner is None:
-            return render(request, 'core/play_session.html', {
-                'game_id': game.id
-            })
+            return render(
+                request,
+                'core/play_session.html',
+                {'game': game}
+            )
+
         else:
             return redirect('index')
     except Game.DoesNotExist:

@@ -33,6 +33,17 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+ASGI_APPLICATION = 'dominion.routing.application'
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('test-no.de', 6379)],
+        }
+    }
+}
 
 # Application definition
 
@@ -44,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 ]
 
 MIDDLEWARE = [
