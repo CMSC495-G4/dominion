@@ -7,8 +7,11 @@ import { ChatComponent } from './components/chat/chat.component';
 import { LogComponent } from './components/log/log.component';
 
 import { CardsService } from './services/cards/cards.service';
+import { ServerService } from './services/server/server.service';
+
 import { HandComponent } from './components/hand/hand.component';
 import { StatusComponent } from './components/status/status.component'
+
 
 @NgModule({
   declarations: [
@@ -22,7 +25,10 @@ import { StatusComponent } from './components/status/status.component'
   imports: [
     BrowserModule,
   ],
-  providers: [CardsService],
+  providers: [
+    CardsService,
+    ServerService,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
