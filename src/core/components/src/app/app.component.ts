@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef } from '@angular/core';
+import { EventEmitter } from 'events';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +8,18 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+
+  websocket: WebSocket;
+  chatEvents = new Subject();
+  logEvents = new Subject();
+  updateEvents = new Subject();
+
+  state;
+
+  constructor({nativeElement}: ElementRef) {
+    let gameId = +nativeElement.getAttribute('game-id');
+    let userId = +nativeElement.getAttribute('user-id');
+    let userName = nativeElement.getAttribute('user-name');
+    let players = nativeElement.getAttribute('players').split(',');
+  }
 }

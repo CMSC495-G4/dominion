@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { ServerService } from '../../services/server/server.service';
 
 @Component({
   selector: 'app-log',
   templateUrl: './log.component.html',
   styleUrls: ['./log.component.css']
 })
-export class LogComponent implements OnInit {
+export class LogComponent {
 
-  constructor() { }
+  messages = '';
 
-  ngOnInit() {
+  constructor(private server: ServerService) {
+    server.logEvents.subscribe(message => {
+      this.messages += message + '\n\n';
+    })
   }
-
 }
