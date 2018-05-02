@@ -2,24 +2,8 @@
 <h2 class="font-weight-light my-2">Your Hand</h2>
 
 <div class="border d-flex flex-wrap align-items-center justify-content-center">
-  <div class="dominion-card">
-      <img src="assets/images/Moat.jpg">
-  </div>
-
-  <div class="dominion-card">
-      <img src="assets/images/Cellar.jpg">
-  </div>
-
-  <div class="dominion-card">
-      <img src="assets/images/Village.jpg">
-  </div>
-
-  <div class="dominion-card">
-      <img src="assets/images/Remodel.jpg">
-  </div>
-
-  <div class="dominion-card">
-      <img src="assets/images/Market.jpg">
-  </div>
-
+    <app-card
+        *ngFor="let card of game.getPlayer().hand"
+        [card]="card">
+    </app-card>
 </div>

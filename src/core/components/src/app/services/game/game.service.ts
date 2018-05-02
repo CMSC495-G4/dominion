@@ -71,7 +71,7 @@ export class GameService {
         return 'buy';
 
       case 'buy':
-        return 'cleanup':
+        return 'cleanup';
 
       case 'cleanup':
       default:
@@ -79,10 +79,8 @@ export class GameService {
     }
   }
 
-  initialState() {
-    return {
-
-    }
+  isPlayersTurn() {
+    return this.getPlayer() == this.getCurrentPlayer();
   }
 
   getPlayer(): Player {

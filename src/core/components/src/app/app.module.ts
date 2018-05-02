@@ -11,7 +11,8 @@ import { ServerService } from './services/server/server.service';
 import { GameService } from './services/game/game.service';
 
 import { HandComponent } from './components/hand/hand.component';
-import { StatusComponent } from './components/status/status.component'
+import { StatusComponent } from './components/status/status.component';
+import { CardComponent } from './components/card/card.component'
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { StatusComponent } from './components/status/status.component'
     ChatComponent,
     LogComponent,
     HandComponent,
-    StatusComponent
+    StatusComponent,
+    CardComponent
   ],
   imports: [
     BrowserModule,
