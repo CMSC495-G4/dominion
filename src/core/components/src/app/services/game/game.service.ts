@@ -60,8 +60,16 @@ export class GameService {
 
   }
 
+  endActions() {
+    this.state.phase = 'buy';
+    this.server.sendUpdate(this.state);
+    this.server.sendLog(`${this.getPlayer().name} has finished their actions.`);
+  }
+
   endTurn() {
     this.state.turn ++;
+    this.state.phase = 'action';
+    this.server.sendLog(`${this.getPlayer().name} has ended their turn.`);
     this.server.sendUpdate(this.state);
   }
 
