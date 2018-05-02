@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CardsService } from '../../services/cards/cards.service'
 import { Card } from '../../services/models'
+import { GameService } from '../../services/game/game.service';
 
 @Component({
   selector: 'app-supply',
@@ -11,15 +12,16 @@ export class SupplyComponent {
 
   cards: Card[] = [];
 
-  constructor(public cardsService: CardsService) {
-    this.cards = cardsService.getInitialSupply();
-    console.log(this.cards);
+  constructor(
+    public game: GameService,
+    public cardsService: CardsService) {
+    this.cards = this.game.state.supply;
   }
 
   getCardGroups() {
     const cardGroups = [];
 
-    this.cards.forEach(card => {
+    this.game.state.supply.forEach(card => {
       const group = cardGroups.find(groupedCard =>
         groupedCard.name == card.name);
 
