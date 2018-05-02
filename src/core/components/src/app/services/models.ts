@@ -5,7 +5,7 @@ export interface GameState {
     turn: number;
     phase: "action" | "buy" | "cleanup";
     supply: Card[];
-    log: string[];
+    log?: string[];
 }
 
 export interface Player {
@@ -27,4 +27,9 @@ export interface Card {
     cost: number;
     value?: number;
     reducer?: (GameState) => Promise<GameState>;
+}
+
+export interface Message {
+    user: string;
+    text: string;
 }

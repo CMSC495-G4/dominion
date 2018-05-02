@@ -8,6 +8,7 @@ import { LogComponent } from './components/log/log.component';
 
 import { CardsService } from './services/cards/cards.service';
 import { ServerService } from './services/server/server.service';
+import { GameService } from './services/game/game.service';
 
 import { HandComponent } from './components/hand/hand.component';
 import { StatusComponent } from './components/status/status.component'
@@ -28,6 +29,7 @@ import { StatusComponent } from './components/status/status.component'
   providers: [
     CardsService,
     ServerService,
+    GameService,
   ],
   bootstrap: [AppComponent]
 })

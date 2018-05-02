@@ -1,15 +1,17 @@
 
-<h2 class="font-weight-light mb-1" style="font-size: 1.5rem">Game Status (Your Turn)</h2>
+<h2 class="font-weight-light mb-1" style="font-size: 1.5rem">Game Status</h2>
 
 <small>
-  <em>Phase: Action</em>
+  <em>{{ game.getCurrentPlayer().name | titlecase }}'s turn</em>
   <br>
-  <em>Opponent: test</em>
+  <em>Turn Number: {{ game.state.turn }}</em>
   <br>
-  <em>Opponent's Victory Score: 0</em>
+  <em>Phase: {{ game.state.phase | titlecase }}</em>
   <br>
-  <em>Your Victory Score: 0</em>
+  <em>Opponent: {{ game.getOpponent().name }}</em>
   <br>
-  <em>Turn Number: 0</em>
+  <em>Opponent's Victory Score: {{ game.getOpponentVictoryScore() }}</em>
+  <br>
+  <em>Your Victory Score: {{ game.getVictoryScore() }}</em>
 
 </small>

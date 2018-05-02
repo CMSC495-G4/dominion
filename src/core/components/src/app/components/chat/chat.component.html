@@ -1,16 +1,17 @@
 
 <h2 class="font-weight-light mb-1" style="font-size: 1.5rem">Chat</h2>
 
-<textarea
-  class="form-control rounded-0 border-0 padding-1"
-  style="background-color: #555; color: white;"
-  rows="20"
-  readonly>{{ messages }}</textarea>
+<div class="chat-pane text-light p-2" (click)="input.focus()" #pane>
+  <div *ngFor="let message of messages">
+    <b>{{ message.user }}</b>: {{ message.text }}
+    <hr />
+  </div>
+</div>
 
 <input
   type="text"
-  class="form-control rounded-0 border-0"
-  style="background-color: #666; color: white;"
+  class="chat-input form-control text-light"
   placeholder="Enter a message"
   aria-label="Enter a message"
-  (keyup)="handleKeyUp($event)">
+  (keyup)="handleKeyUp($event)"
+  #input>

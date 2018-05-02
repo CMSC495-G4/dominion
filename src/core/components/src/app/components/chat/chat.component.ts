@@ -1,27 +1,44 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { ServerService } from '../../services/server/server.service';
+import { Message } from '../../services/models';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent {
+export class ChatComponent implements AfterViewInit {
 
-  messages = '';
+  @ViewChild('pane')
+  chatPane: ElementRef;
 
-  constructor(private server: ServerService) {
-    server.chatEvents.subscribe(message => {
-      this.messages += message + '\n';
+  @ViewChild('input')
+  chatInput: ElementRef;
+
+  messages: Message[] = [];
+
+  constructor(private server: ServerService) {}
+
+  ngAfterViewInit() {
+
+    this.server.chatEvents.subscribe(message => {
+      this.messages.push(message);
+      setTimeout(() => {
+        let el = this.chatPane.nativeElement as Element;
+        el.scrollTop = el.scrollHeight - el.clientHeight;
+      }, 0);
     })
   }
+
 
   handleKeyUp(event: KeyboardEvent) {
     const element = event.target as HTMLInputElement;
 
     if (event.code == 'Enter') {
-      let message = element.value;
-      this.server.sendChat(message);
+      this.server.sendChat({
+        user: window['config'].player.name,
+        text: element.value
+      })
       element.value = '';
     }
   }

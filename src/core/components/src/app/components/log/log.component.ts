@@ -13,6 +13,6 @@ export class LogComponent {
   constructor(private server: ServerService) {
     server.logEvents.subscribe(message => {
       this.messages += message + '\n\n';
-    })
+    });
   }
 }

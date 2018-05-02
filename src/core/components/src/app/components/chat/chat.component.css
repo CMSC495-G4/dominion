@@ -1,3 +1,24 @@
+.chat-pane {
+  border-radius: 4px 4px 0 0;
+  background-color: #555;
+  height: 400px;
+  overflow: auto;
+}
+
+.chat-pane hr {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  border-color: #777;
+}
+
+
+
+.chat-input {
+  border: none;
+  background-color: #666;
+  border-radius: 0 0 4px 4px;
+}
+
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
   color: #ddd;
 }
@@ -10,3 +31,4 @@
 :-moz-placeholder { /* Firefox 18- */
   color: #ddd;
 }
+

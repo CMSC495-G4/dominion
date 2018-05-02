@@ -1,6 +1,9 @@
 import { Component, ElementRef } from '@angular/core';
 import { EventEmitter } from 'events';
 import { Subject } from 'rxjs';
+import { GameService } from './services/game/game.service';
+import { ServerService } from './services/server/server.service';
+import { CardsService } from './services/cards/cards.service';
 
 @Component({
   selector: 'app-root',
@@ -9,17 +12,12 @@ import { Subject } from 'rxjs';
 })
 export class AppComponent {
 
-  websocket: WebSocket;
-  chatEvents = new Subject();
-  logEvents = new Subject();
-  updateEvents = new Subject();
+  constructor(
+    public game: GameService,
+    private server: ServerService,
+    private cards: CardsService,
+  ) {
 
-  state;
 
-  constructor({nativeElement}: ElementRef) {
-    let gameId = +nativeElement.getAttribute('game-id');
-    let userId = +nativeElement.getAttribute('user-id');
-    let userName = nativeElement.getAttribute('user-name');
-    let players = nativeElement.getAttribute('players').split(',');
   }
 }

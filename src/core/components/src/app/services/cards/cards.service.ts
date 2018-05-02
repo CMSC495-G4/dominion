@@ -7,7 +7,7 @@ import { GameState, Card, Player } from '../models';
 export class CardsService {
   /** http://dominion.diehrstraits.com/?set=All&f=list */
 
-  cards: Card[] = [
+  CARDS: Card[] = [
     {
       name: 'copper',
       cost: 0,
@@ -65,7 +65,7 @@ export class CardsService {
           [state.turn % state.players.length];
 
         // allow the player to select all the cards in their hand
-        const selection = await this.getSelection(
+        const selection = await this.getRandomSelection(
           currentPlayer,
           currentPlayer.hand.length
         );
@@ -100,7 +100,7 @@ export class CardsService {
           [state.turn % state.players.length];
 
         // allow the player to select up to four cards
-        const selection = await this.getSelection(currentPlayer, 4);
+        const selection = await this.getRandomSelection(currentPlayer, 4);
 
         // remove the cards from the player's hand
         currentPlayer.hand = currentPlayer.hand
@@ -332,8 +332,22 @@ export class CardsService {
    */
   getCard(name: string) {
     return Object.assign({},
-      this.cards.find(card => card.name === name)
+      this.CARDS.find(card => card.name === name)
     );
+  }
+
+  getInitialDeck(): Card[] {
+    const cards = [];
+
+    for (let i = 0; i < 7; i ++) {
+      cards.push(this.getCard('copper'));
+    }
+
+    for (let j = 0; j < 3; j ++) {
+      cards.push(this.getCard('estate'));
+    }
+
+    return cards;
   }
 
   getInitialSupply(): Card[] {
@@ -387,7 +401,7 @@ export class CardsService {
    * (returns references to the cards)
    * @param player
    */
-  async getSelection(player: Player, limit: number): Promise<Card[]> {
+  async getRandomSelection(player: Player, limit: number): Promise<Card[]> {
     const hand = player.hand;
     const selection = [];
 
@@ -408,5 +422,17 @@ export class CardsService {
     }
 
     return shuffled;
+  }
+
+  transfer(from: any[], to: any[], count: number) {
+    while (count-- && from.length) {
+      to.push(from.pop())
+    }
+  }
+
+  getVictoryScore(cards: Card[]): number {
+    return cards
+      .filter(card => ['victory', 'curse'].includes(card.type))
+      .reduce((prev, curr) => prev += curr.value, 0);
   }
 }

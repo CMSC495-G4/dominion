@@ -17,6 +17,27 @@
 {% endblock %}
 
 {% block additional_scripts %}
+    <script>
+      window.config = {
+        gameId: {{ game.id }},
+        player: {
+          id: {{ user.id }},
+          name: "{{ user.username }}",
+        },
+
+        players: [
+          {
+            id: {{ game.player_1.id }},
+            name: "{{game.player_1.username}}",
+          },
+          {
+            id: {{ game.player_2.id }},
+            name: "{{game.player_2.username}}",
+          },
+        ],
+      };
+    </script>
+
     <script src="{% static 'game/runtime.js' %}"></script>
     <script src="{% static 'game/polyfills.js' %}"></script>
     <script src="{% static 'game/main.js' %}"></script>

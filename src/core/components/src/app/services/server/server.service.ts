@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Message, GameState } from '../models'
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +9,20 @@ export class ServerService {
 
   gameId = location.pathname.split('/').pop()
   websocket = new WebSocket(`ws://${location.host}/api/game/${this.gameId}/`)
+  queue: string[] = [];
 
-  public chatEvents: Subject<String> = new Subject();
+  public chatEvents: Subject<Message> = new Subject();
   public logEvents: Subject<String> = new Subject();
-  public updateEvents: Subject<Object> = new Subject();
+  public updateEvents: Subject<GameState> = new Subject();
 
   constructor() {
     window['debugSocket'] = this.websocket;
     window['sendSocketData'] = data => this.websocket.send(JSON.stringify(data));
+
+    this.websocket.addEventListener('open', ev => {
+      while (this.queue.length)
+        this.websocket.send(this.queue.shift())
+    })
 
     this.websocket.addEventListener('message', message => {
       console.log(message);
@@ -35,13 +42,21 @@ export class ServerService {
     });
   }
 
-  public sendChat(data: string) {
+  sendMessage(message) {
+    if (this.websocket.readyState == 1) {
+      this.websocket.send(message);
+    } else {
+      this.queue.push(message);
+    }
+  }
+
+  public sendChat(data: Message) {
     const message = JSON.stringify({
       type: 'chat',
       payload: data
     });
 
-    this.websocket.send(message);
+    this.sendMessage(message);
   }
 
   public sendLog(data: string) {
@@ -50,17 +65,17 @@ export class ServerService {
       payload: data
     });
 
-    this.websocket.send(message);
+    this.sendMessage(message);
   }
 
-  public sendUpdate(data: object) {
+  public sendUpdate(data: GameState) {
     const message = JSON.stringify({
       type: 'update',
       payload: data
     });
 
     console.log(message);
-    this.websocket.send(message);
+    this.sendMessage(message);
   }
 
 
