@@ -1,8 +1,9 @@
 
 <h2 class="font-weight-light mb-1" style="font-size: 1.5rem">Game Log</h2>
 
-<textarea
-  class="form-control rounded-0 border-0 padding-1"
-  style="background-color: #555; color: white;"
-  rows="20"
-  readonly>{{ messages }}</textarea>
+<div class="log-pane text-light p-2" #log>
+  <div *ngFor="let message of messages">
+    <em>{{ message }}</em>
+    <hr />
+  </div>
+</div>

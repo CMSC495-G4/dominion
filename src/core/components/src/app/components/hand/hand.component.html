@@ -22,8 +22,8 @@
 
     <div class="lead" *ngIf="game.state.phase == 'buy' && game.isPlayersTurn()">
         You have {{ game.getPlayer().coins }}
-        coin{{game.getPlayer().coins == 1 ? '' : 's'}}.
-        If you wish, buy a card from the supply.
+        coin{{game.getPlayer().coins == 1 ? '' : 's'}} and can buy up to
+        {{ game.getPlayer().buys }} card{{game.getPlayer().buys == 1 ? '' : 's'}}.
         <br>
         <button class="btn btn-primary my-2" (click)="game.endTurn()">End Turn</button>
     </div>

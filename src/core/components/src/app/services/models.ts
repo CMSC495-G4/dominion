@@ -27,6 +27,7 @@ export interface Card {
     cost: number;
     value?: number;
     reducer?: (GameState) => Promise<GameState>;
+    description?: string;
 }
 
 export interface Message {

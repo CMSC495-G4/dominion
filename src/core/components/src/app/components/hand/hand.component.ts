@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../../services/game/game.service';
+import { Card } from '../../services/models';
 
 @Component({
   selector: 'app-hand',
@@ -8,8 +9,7 @@ import { GameService } from '../../services/game/game.service';
 })
 export class HandComponent {
 
-  constructor(public game: GameService) {
+  constructor(public game: GameService) {}
 
-  }
 
 }

@@ -31,9 +31,16 @@
         {{ card.value }}
       </td>
       <td>
+          {{ card.description }}
       </td>
       <td>
-        <button class="btn btn-primary btn-sm" (click)="buyCard(card.name)">Buy</button>
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="game.buyCard(getCard(card.name))"
+          [ngClass]="{'disabled': !game.canBuyCard(getCard(card.name))}"
+          >
+          Buy
+        </button>
       </td>
 
     </tr>

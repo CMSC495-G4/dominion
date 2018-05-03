@@ -1,10 +1,17 @@
 import { Injectable } from '@angular/core';
 import { GameState, Card, Player } from '../models';
+import { GameService } from '../game/game.service';
+import { ServerService } from '../server/server.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CardsService {
+
+  constructor(private server: ServerService) {
+
+  }
+
   /** http://dominion.diehrstraits.com/?set=All&f=list */
 
   CARDS: Card[] = [
@@ -13,18 +20,21 @@ export class CardsService {
       cost: 0,
       type: 'treasure',
       value: 1,
+      description: '+1 coin',
     },
     {
       name: 'silver',
       cost: 3,
       type: 'treasure',
       value: 2,
+      description: '+2 coins',
     },
     {
       name: 'gold',
       cost: 6,
       type: 'treasure',
       value: 3,
+      description: '+3 coins',
     },
 
     {
@@ -32,18 +42,21 @@ export class CardsService {
       cost: 2,
       type: 'victory',
       value: 1,
+      description: '+1 victory point',
     },
     {
       name: 'duchy',
       cost: 5,
       type: 'victory',
       value: 3,
+      description: '+3 victory points',
     },
     {
       name: 'province',
       cost: 8,
       type: 'victory',
       value: 6,
+      description: '+6 victory points',
     },
 
     {
@@ -51,6 +64,7 @@ export class CardsService {
       cost: 0,
       type: 'curse',
       value: -1,
+      description: '-1 victory point',
     },
 
 
@@ -58,6 +72,7 @@ export class CardsService {
       name: 'cellar',
       cost: 2,
       type: 'action',
+      description: 'Swap out your hand',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -93,6 +108,7 @@ export class CardsService {
       name: 'chapel',
       cost: 2,
       type: 'action',
+      description: 'Trash up to four cards',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -118,6 +134,7 @@ export class CardsService {
       name: 'moat',
       cost: 2,
       type: 'action',
+      description: 'protect from attack',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -137,6 +154,7 @@ export class CardsService {
       name: 'chancellor',
       cost: 3,
       type: 'action',
+      description: 'Put your discard pile into your deck',
       reducer: async (state: GameState)  =>  {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -161,6 +179,7 @@ export class CardsService {
       name: 'village',
       cost: 3,
       type: 'action',
+      description: '+1 card, +2 actions',
       reducer: async (state: GameState) =>  {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -169,7 +188,6 @@ export class CardsService {
 
         // +1 card
         const card = currentPlayer.deck.pop();
-        newState.log.push(`${currentPlayer.name} drew: ${card.name}`);
         currentPlayer.hand.push(card);
 
         // +2 actions
@@ -182,6 +200,7 @@ export class CardsService {
       name: 'woodcutter',
       cost: 3,
       type: 'action',
+      description: '+1 buy, +2 coins',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -203,6 +222,7 @@ export class CardsService {
       name: 'workshop',
       cost: 3,
       type: 'action',
+      description: '+4 coins, +1 buy',
       reducer: async (state: GameState) =>  {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -211,6 +231,10 @@ export class CardsService {
 
         // +4 coins
         currentPlayer.coins += 4;
+
+        // +1 buys
+        currentPlayer.buys += 1;
+
         return newState;
       }
     },
@@ -219,30 +243,29 @@ export class CardsService {
 
     {
       name: 'witch',
-      cost: 0,
+      cost: 5,
       type: 'action',
-      value: 1,
+      description: 'opponents gain a curse',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
         const currentPlayer = newState.players
           [state.turn % state.players.length];
 
-        newState.log.push(`${currentPlayer.name} played: witch.`);
-        currentPlayer.actions --;
-
         for (let i = 0; i < 2; i ++) {
           const card = currentPlayer.deck.pop();
-          newState.log.push(`${currentPlayer.name} drew: ${card.name}`);
           currentPlayer.hand.push(card);
         }
 
         newState.players
           .filter(player => player.id != currentPlayer.id)
-          .filter(player => !player.hand.find(card => card.name == 'moat'))
           .forEach(player => {
-            player.deck.push(this.getCard('curse'));
-            newState.log.push(`${player.name} gained: curse.`);
+            if (player.hand.find(card => card.name == 'moat')) {
+              this.server.sendLog(`${player.name}'s moat protects them!`);
+            } else {
+              this.server.sendLog(`${player.name} has been cursed!`);
+              player.hand.push(this.getCard('curse'));
+            }
           });
 
         return newState;
@@ -253,6 +276,7 @@ export class CardsService {
       name: 'militia',
       cost: 4,
       type: 'action',
+      description: 'opponents discard down to 3 cards',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -262,14 +286,17 @@ export class CardsService {
 
         newState.players
           .filter(player => player.id != currentPlayer.id)
-          .filter(player => !player.hand.find(card => card.name == 'moat'))
           .forEach(player => {
-            // discard down to three cards
-            while (player.hand.length > 3) {
+            if (player.hand.find(card => card.name == 'moat')) {
+              this.server.sendLog(`${player.name}'s moat protects them!`);
+            } else {
+              // discard down to three cards
+              while (player.hand.length > 3) {
                 let index = Math.floor(Math.random() * player.hand.length);
                 let card = player.hand.splice(index, 1)[0];
+                this.server.sendLog(`${player.name} is forced to discard a${/aeiou/i.test(card.name) ? 'n' : ''} ${card.name}!`);
                 player.discard.push(card);
-                newState.log.push(`${player.name} was forced to discard: ${card.name}`);
+              }
             }
           });
 
@@ -281,6 +308,7 @@ export class CardsService {
       name: 'moneylender',
       cost: 4,
       type: 'action',
+      description: 'trash a copper for +3 coins',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -304,6 +332,7 @@ export class CardsService {
       name: 'remodel',
       cost: 4,
       type: 'action',
+      description: 'trash a copper for +3 coins',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -374,15 +403,17 @@ export class CardsService {
 
     // use recommended starting cards
     const actionCards = [
-     'cellar',
- //     'market',
+//     'cellar',
+//     'market',
       'militia',
 //      'mine',
       'moat',
-      'remodel',
+//      'remodel',
 //      'smithy',
+      'moneylender',
       'village',
       'woodcutter',
+      'witch',
       'workshop'
     ];
 

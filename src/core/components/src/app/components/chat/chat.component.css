@@ -1,7 +1,7 @@
 .chat-pane {
   border-radius: 4px 4px 0 0;
   background-color: #555;
-  height: 400px;
+  height: 250px;
   overflow: auto;
 }
 

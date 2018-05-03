@@ -1,0 +1,12 @@
+.log-pane {
+  border-radius: 4px 4px 0 0;
+  background-color: #555;
+  height: 250px;
+  overflow: auto;
+}
+
+.log-pane hr {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  border-color: #777;
+}

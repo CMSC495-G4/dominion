@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ServerService } from '../../services/server/server.service';
 
 @Component({
@@ -6,13 +6,23 @@ import { ServerService } from '../../services/server/server.service';
   templateUrl: './log.component.html',
   styleUrls: ['./log.component.css']
 })
-export class LogComponent {
+export class LogComponent implements AfterViewInit {
 
-  messages = '';
+  @ViewChild('log')
+  logPane: ElementRef;
 
-  constructor(private server: ServerService) {
-    server.logEvents.subscribe(message => {
-      this.messages += message + '\n\n';
+  messages = [];
+
+  constructor(private server: ServerService) {}
+
+  ngAfterViewInit() {
+    let el = this.logPane.nativeElement as HTMLElement;
+
+    this.server.logEvents.subscribe(message => {
+      this.messages.push(message);
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight;
+      }, 0);
     });
   }
 }

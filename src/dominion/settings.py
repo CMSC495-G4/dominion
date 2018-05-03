@@ -152,3 +152,4 @@ else:
     EMAIL_HOST_PASSWORD = os.getenv('email_host_password')
     EMAIL_PORT = 587
 
+

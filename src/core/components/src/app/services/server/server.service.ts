@@ -25,7 +25,6 @@ export class ServerService {
     })
 
     this.websocket.addEventListener('message', message => {
-      console.log(message);
       const data = JSON.parse(message.data);
       if (!data.type) return;
 
@@ -74,7 +73,6 @@ export class ServerService {
       payload: data
     });
 
-    console.log(message);
     this.sendMessage(message);
   }
 

@@ -1,20 +1,27 @@
 <div class="container-fluid">
   <div class="row">
-    <div class="col-sm-9">
-        <app-supply></app-supply>
-        <app-hand></app-hand>
-      </div>
+    <div class="col-sm-9" *ngIf="!game.isGameOver()">
+      <app-supply></app-supply>
+      <app-hand></app-hand>
+    </div>
 
-      <div class="col bg-dark text-light py-3">
-        <app-status></app-status>
-        <hr>
-        <app-log></app-log>
-        <hr>
-        <app-chat></app-chat>
-      </div>
-  </div>
-  <div class="row">
-      <pre>{{ game.state | json}}</pre>
+    <div class="col-sm-9 p-4 text-center" *ngIf="game.isGameOver()">
+      <h2 class="font-weight-light">
+        The winner is {{ game.getWinner().name }}!
+      </h2>
+
+      <a href="/" class="btn btn-primary">
+        Return home
+      </a>
+    </div>
+
+    <div class="col bg-dark text-light py-3">
+      <app-status></app-status>
+      <hr>
+      <app-log></app-log>
+      <hr>
+      <app-chat></app-chat>
+    </div>
   </div>
 
 </div>

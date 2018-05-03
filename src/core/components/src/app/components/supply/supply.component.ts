@@ -10,12 +10,9 @@ import { GameService } from '../../services/game/game.service';
 })
 export class SupplyComponent {
 
-  cards: Card[] = [];
-
   constructor(
     public game: GameService,
     public cardsService: CardsService) {
-    this.cards = this.game.state.supply;
   }
 
   getCardGroups() {
@@ -36,15 +33,12 @@ export class SupplyComponent {
     });
 
     cardGroups.sort((a, b) => b.type.localeCompare(a.type) || a.cost - b.cost);
-
-
     return cardGroups;
   }
 
-  buyCard(cardName: string) {
-    let card = this.cards.find(card => card.name == cardName);
-    let index = this.cards.indexOf(card);
-    this.cards.splice(index, 1);
+  getCard(cardName: string) {
+    let card = this.game.state.supply.find(card => card.name == cardName);
+    return card;
   }
 
 }
