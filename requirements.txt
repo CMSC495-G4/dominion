@@ -1,5 +1,5 @@
 channels_redis
 coverage
 django
-django-channels
+channels
 whitenoise

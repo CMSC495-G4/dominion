@@ -21,7 +21,7 @@ ENV production true
 
 COPY requirements.txt /tmp/requirements.txt
 
-RUN pip3.6 install -r /tmp/requirements.txt mod_wsgi \
+RUN pip3.6 install -r /tmp/requirements.txt \
  && rm /tmp/requirements.txt
 
 COPY deploy/entrypoint.sh /bin/entrypoint.sh
