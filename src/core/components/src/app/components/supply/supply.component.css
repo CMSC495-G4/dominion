@@ -1,0 +1,19 @@
+.supply-card {
+  width: 130px;
+  transition: 0.1s;
+  cursor: pointer;
+}
+
+.supply-card.disabled:hover {
+  width: 130px;
+}
+
+
+.supply-card:hover {
+  width: 145px;
+}
+
+.supply-card.disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}

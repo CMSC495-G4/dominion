@@ -154,12 +154,14 @@ export class CardsService {
       name: 'chancellor',
       cost: 3,
       type: 'action',
-      description: 'Put your discard pile into your deck',
+      description: '+2 coins, put your discard pile into your deck',
       reducer: async (state: GameState)  =>  {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
         const currentPlayer = newState.players
           [state.turn % state.players.length];
+
+        currentPlayer.coins += 2;
 
         // puts the player's discard pile into their deck
         while (currentPlayer.discard.length > 0) {
@@ -353,6 +355,188 @@ export class CardsService {
     },
 
 
+    {
+      name: 'council room',
+      cost: 5,
+      type: 'action',
+      description: '+4 cards, +1 buy, other players draw a card',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        this.transfer(currentPlayer.deck, currentPlayer.hand, 4);
+        currentPlayer.buys ++;
+
+        newState.players
+          .filter(player => player.id != currentPlayer.id)
+          .forEach(player => {
+            this.transfer(player.deck, player.hand, 1);
+          });
+
+        return newState;
+      }
+    },
+
+    {
+      name: 'feast',
+      cost: 4,
+      type: 'action',
+      description: '+5 coins, +1 buy, trash this card',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.buys ++;
+        currentPlayer.coins += 5;
+
+        return newState;
+      }
+    },
+
+
+    {
+      name: 'festival',
+      cost: 5,
+      type: 'action',
+      description: '+2 actions, +1 buy, +2 coins',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.actions += 2;
+        currentPlayer.buys ++;
+        currentPlayer.coins += 2;
+
+        return newState;
+      }
+    },
+
+    {
+      name: 'gardens',
+      cost: 4,
+      type: 'victory',
+      description: '+1 victory point/10 cards',
+    },
+
+
+    {
+      name: 'laboratory',
+      cost: 5,
+      type: 'action',
+      description: '+2 cards, +1 action',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.actions += 1;
+        this.transfer(currentPlayer.deck, currentPlayer.hand, 2);
+        return newState;
+      }
+    },
+
+
+    {
+      name: 'market',
+      cost: 5,
+      type: 'action',
+      description: '+1 cards, +1 action, +1 buy, +1 coin',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.actions += 1;
+        currentPlayer.buys += 1;
+        currentPlayer.coins += 1;
+        this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+
+        return newState;
+      }
+    },
+
+
+    {
+      name: 'merchant',
+      cost: 3,
+      type: 'action',
+      description: '+1 cards, +1 action, +1 coin (w/ silver)',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.actions += 1;
+        this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        if (currentPlayer.hand.find(card => card.name == 'silver'))
+          currentPlayer.coins += 1;
+
+        return newState;
+      }
+    },
+
+    {
+      name: 'mine',
+      cost: 5,
+      type: 'action',
+      description: 'silver to gold, or copper to silver',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        const silver = currentPlayer.hand.find(card => card.name == 'silver');
+        const copper = currentPlayer.hand.find(card => card.name == 'copper');
+
+        if (silver) {
+          let silverIndex = currentPlayer.hand.indexOf(silver);
+          currentPlayer.trash.push(...currentPlayer.hand.splice(silverIndex, 1));
+          currentPlayer.hand.push(this.getCard('gold'));
+
+        } else if (copper) {
+          let copperIndex = currentPlayer.hand.indexOf(copper);
+          currentPlayer.trash.push(...currentPlayer.hand.splice(copperIndex, 1));
+          currentPlayer.hand.push(this.getCard('silver'));
+        }
+
+        return newState;
+      }
+    },
+
+    {
+      name: 'smithy',
+      cost: 4,
+      type: 'action',
+      description: '+3 cards',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        this.transfer(currentPlayer.deck, currentPlayer.hand, 3);
+        return newState;
+      }
+    },
+
   ];
 
   /**
@@ -404,12 +588,21 @@ export class CardsService {
     // use recommended starting cards
     const actionCards = [
 //     'cellar',
-//     'market',
+      'market',
+      'feast',
+
       'militia',
-//      'mine',
+      'mine',
       'moat',
+      'chancellor',
+      'council room',
+      'festival',
+      'gardens',
+      'laboratory',
+      'merchant',
+
 //      'remodel',
-//      'smithy',
+      'smithy',
       'moneylender',
       'village',
       'woodcutter',
