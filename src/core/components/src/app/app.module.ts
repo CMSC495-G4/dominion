@@ -9,10 +9,12 @@ import { LogComponent } from './components/log/log.component';
 import { CardsService } from './services/cards/cards.service';
 import { ServerService } from './services/server/server.service';
 import { GameService } from './services/game/game.service';
+import { AudioService } from './services/audio/audio.service';
 
 import { HandComponent } from './components/hand/hand.component';
 import { StatusComponent } from './components/status/status.component';
-import { CardComponent } from './components/card/card.component'
+import { CardComponent } from './components/card/card.component';
+import { AudioControlComponent } from './components/audio-control/audio-control.component'
 
 
 @NgModule({
@@ -23,7 +25,8 @@ import { CardComponent } from './components/card/card.component'
     LogComponent,
     HandComponent,
     StatusComponent,
-    CardComponent
+    CardComponent,
+    AudioControlComponent
   ],
   imports: [
     BrowserModule,
@@ -32,6 +35,7 @@ import { CardComponent } from './components/card/card.component'
     CardsService,
     ServerService,
     GameService,
+    AudioService,
   ],
   bootstrap: [AppComponent]
 })

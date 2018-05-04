@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Card, GameState, Player } from '../models';
 import { CardsService } from '../cards/cards.service';
 import { ServerService } from '../server/server.service';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
+import { AudioService } from '../audio/audio.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +27,8 @@ export class GameService {
 
   constructor(
     private cards: CardsService,
-    private server: ServerService) {
+    private server: ServerService,
+    private audio: AudioService) {
 
     this.state.supply = this.cards.getInitialSupply();
 
@@ -54,7 +55,12 @@ export class GameService {
     }
 
     this.server.updateEvents
-      .subscribe(update => this.state = update);
+      .subscribe(update => {
+        if (update.turn != this.state.turn) {
+          this.audio.playSound('action.mp3');
+        }
+        this.state = update;
+      });
   }
 
   startTurn() {
@@ -73,6 +79,9 @@ export class GameService {
       player.coins -= card.cost;
       this.server.sendUpdate(this.state);
       this.server.sendLog(`${player.name} buys a${/[aeiou]/i.test(card.name[0]) ? 'n' : ''} ${card.name}!`)
+      if (card.soundFile) {
+        this.audio.playSound(card.soundFile);
+      }
       this.checkVictory();
     } else {
       console.log(`Can't buy`, card, player);
@@ -102,6 +111,11 @@ export class GameService {
 
       let handIndex = player.hand.indexOf(card);
       player.discard.push(...player.hand.splice(handIndex, 1));
+
+      if (card.soundFile) {
+        this.audio.playSound(card.soundFile);
+      }
+
       this.server.sendUpdate(this.state);
     } else {
       console.log('It is not the correct time to play that card.');
@@ -112,19 +126,26 @@ export class GameService {
     const player = this.getCurrentPlayer();
     this.state.phase = 'buy';
     player.coins += this.calculateCoins()
+    this.audio.playSound('buy.mp3');
+
 
     this.server.sendUpdate(this.state);
     this.server.sendLog(`${this.getPlayer().name} has finished their actions.`);
   }
 
   endTurn() {
+    this.audio.playSound('cleanup.mp3');
     const player = this.getCurrentPlayer();
 
     this.state.turn ++;
     this.state.phase = 'action';
     this.cards.transfer(player.hand, player.discard, player.hand.length);
-    this.cards.transfer(player.discard, player.deck, player.discard.length);
-    player.deck = this.cards.shuffle(player.deck);
+
+    if (player.deck.length < 5) {
+      this.cards.transfer(player.discard, player.deck, player.discard.length);
+      player.deck = this.cards.shuffle(player.deck);
+    }
+
     this.cards.transfer(player.deck, player.hand, 5);
     player.actions = 1;
     player.buys = 1;
@@ -157,6 +178,7 @@ export class GameService {
   checkVictory() {
     if (this.isGameOver()) {
       this.state.winner = this.getWinner();
+      this.audio.playSound('game_won.mp3');
     }
   }
 

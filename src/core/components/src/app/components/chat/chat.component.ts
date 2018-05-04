@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { ServerService } from '../../services/server/server.service';
 import { Message } from '../../services/models';
+import { AudioService } from '../../services/audio/audio.service';
 
 @Component({
   selector: 'app-chat',
@@ -17,12 +18,17 @@ export class ChatComponent implements AfterViewInit {
 
   messages: Message[] = [];
 
-  constructor(private server: ServerService) {}
+  constructor(private server: ServerService, private audio: AudioService) {}
 
   ngAfterViewInit() {
 
     this.server.chatEvents.subscribe(message => {
       this.messages.push(message);
+
+      if (document.activeElement != this.chatInput.nativeElement) {
+        this.audio.playSound('chat.mp3')
+      }
+
       setTimeout(() => {
         let el = this.chatPane.nativeElement as Element;
         el.scrollTop = el.scrollHeight - el.clientHeight;

@@ -21,6 +21,7 @@ export class CardsService {
       type: 'treasure',
       value: 1,
       description: '+1 coin',
+      soundFile: 'gold_or_province.mp3',
     },
     {
       name: 'silver',
@@ -28,6 +29,7 @@ export class CardsService {
       type: 'treasure',
       value: 2,
       description: '+2 coins',
+      soundFile: 'gold_or_province.mp3',
     },
     {
       name: 'gold',
@@ -35,6 +37,7 @@ export class CardsService {
       type: 'treasure',
       value: 3,
       description: '+3 coins',
+      soundFile: 'gold_or_province.mp3',
     },
 
     {
@@ -43,6 +46,7 @@ export class CardsService {
       type: 'victory',
       value: 1,
       description: '+1 victory point',
+      soundFile: 'gold_or_province.mp3',
     },
     {
       name: 'duchy',
@@ -50,6 +54,7 @@ export class CardsService {
       type: 'victory',
       value: 3,
       description: '+3 victory points',
+      soundFile: 'gold_or_province.mp3',
     },
     {
       name: 'province',
@@ -57,6 +62,7 @@ export class CardsService {
       type: 'victory',
       value: 6,
       description: '+6 victory points',
+      soundFile: 'gold_or_province.mp3',
     },
 
     {
@@ -73,6 +79,7 @@ export class CardsService {
       cost: 2,
       type: 'action',
       description: 'Swap out your hand',
+      soundFile: 'cellar.mp3',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -109,6 +116,7 @@ export class CardsService {
       cost: 2,
       type: 'action',
       description: 'Trash up to four cards',
+      soundFile: 'chapel.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -135,6 +143,7 @@ export class CardsService {
       cost: 2,
       type: 'action',
       description: 'protect from attack',
+      soundFile: 'moat.mp3',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -154,6 +163,7 @@ export class CardsService {
       name: 'chancellor',
       cost: 3,
       type: 'action',
+      soundFile: 'throne_room_chancellor.mp3',
       description: '+2 coins, put your discard pile into your deck',
       reducer: async (state: GameState)  =>  {
         const { id, players, winner, turn, phase, supply } = state;
@@ -181,6 +191,7 @@ export class CardsService {
       name: 'village',
       cost: 3,
       type: 'action',
+      soundFile: 'market_festival_village.mp3',
       description: '+1 card, +2 actions',
       reducer: async (state: GameState) =>  {
         const { id, players, winner, turn, phase, supply } = state;
@@ -203,6 +214,7 @@ export class CardsService {
       cost: 3,
       type: 'action',
       description: '+1 buy, +2 coins',
+      soundFile: 'remodel_workshop_smithy.mp3',
       reducer: async (state: GameState)  => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -225,6 +237,7 @@ export class CardsService {
       cost: 3,
       type: 'action',
       description: '+4 coins, +1 buy',
+      soundFile: 'remodel_workshop_smithy.mp3',
       reducer: async (state: GameState) =>  {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -248,6 +261,7 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: 'opponents gain a curse',
+      soundFile: 'lab_witch.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -279,6 +293,7 @@ export class CardsService {
       cost: 4,
       type: 'action',
       description: 'opponents discard down to 3 cards',
+      soundFile: 'militia.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -311,6 +326,7 @@ export class CardsService {
       cost: 4,
       type: 'action',
       description: 'trash a copper for +3 coins',
+      soundFile: 'moneylender.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -335,6 +351,7 @@ export class CardsService {
       cost: 4,
       type: 'action',
       description: 'trash a copper for +3 coins',
+
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -360,6 +377,7 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: '+4 cards, +1 buy, other players draw a card',
+      soundFile: 'throne_room_chancellor.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -385,6 +403,7 @@ export class CardsService {
       cost: 4,
       type: 'action',
       description: '+5 coins, +1 buy, trash this card',
+      soundFile: 'feast.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -405,6 +424,7 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: '+2 actions, +1 buy, +2 coins',
+      soundFile: 'market_festival_village.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -425,6 +445,7 @@ export class CardsService {
       cost: 4,
       type: 'victory',
       description: '+1 victory point/10 cards',
+      soundFile: 'gardens.mp3',
     },
 
 
@@ -433,6 +454,8 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: '+2 cards, +1 action',
+      soundFile: 'lab_witch.mp3',
+
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -452,6 +475,7 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: '+1 cards, +1 action, +1 buy, +1 coin',
+      soundFile: 'market_festival_village.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -474,6 +498,7 @@ export class CardsService {
       cost: 3,
       type: 'action',
       description: '+1 cards, +1 action, +1 coin (w/ silver)',
+      soundFile: 'buy.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -495,6 +520,7 @@ export class CardsService {
       cost: 5,
       type: 'action',
       description: 'silver to gold, or copper to silver',
+      soundFile: 'buy.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -525,6 +551,7 @@ export class CardsService {
       cost: 4,
       type: 'action',
       description: '+3 cards',
+      soundFile: 'remodel_workshop_smithy.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
@@ -657,6 +684,11 @@ export class CardsService {
   getVictoryScore(cards: Card[]): number {
     return cards
       .filter(card => ['victory', 'curse'].includes(card.type))
-      .reduce((prev, curr) => prev += curr.value, 0);
+      .reduce((prev, curr) => {
+        let value = curr.value;
+        if (curr.name == 'gardens')
+          value = Math.floor(cards.length / 10);
+        return prev += value
+      }, 0);
   }
 }

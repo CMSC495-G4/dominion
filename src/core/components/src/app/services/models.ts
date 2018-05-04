@@ -28,6 +28,7 @@ export interface Card {
     value?: number;
     reducer?: (GameState) => Promise<GameState>;
     description?: string;
+    soundFile?: string;
 }
 
 export interface Message {

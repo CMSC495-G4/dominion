@@ -1,16 +1,22 @@
 .supply-card {
-  width: 130px;
+  width: 140px;
   transition: 0.1s;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.supply-card.disabled:hover {
-  width: 130px;
+.supply-card img {
+  border-radius: 4px;
 }
 
+.supply-card.disabled:hover {
+  width: 140px;
+  box-shadow: none;
+}
 
 .supply-card:hover {
-  width: 145px;
+  width: 150px;
+  box-shadow: 0 0 10px #000;
 }
 
 .supply-card.disabled {
