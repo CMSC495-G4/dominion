@@ -301,6 +301,8 @@ export class CardsService {
         const currentPlayer = state.players
           [state.turn % state.players.length];
 
+        currentPlayer.coins += 2;
+        
         newState.players
           .filter(player => player.id != currentPlayer.id)
           .forEach(player => {
@@ -586,7 +588,8 @@ export class CardsService {
     for (let j = 0; j < 3; j ++) {
       cards.push(this.getCard('estate'));
     }
-
+    
+    cards = this.shuffle(cards);
     return cards;
   }
 
