@@ -151,8 +151,14 @@ export class CardsService {
           [state.turn % state.players.length];
 
           for (let i = 0; i < 2; i ++) {
-            const card = currentPlayer.deck.pop();
-            currentPlayer.hand.push(card);
+            if (player.deck.length == 0) {
+              this.cards.transfer(player.discard, player.deck, player.discard.length)
+              player.deck = this.cards.shuffle(player.deck)
+            }
+            if (player.deck.length > 0) {
+              const card = currentPlayer.deck.pop();
+              currentPlayer.hand.push(card);
+            }
           }
 
         return newState;
@@ -200,6 +206,15 @@ export class CardsService {
           [state.turn % state.players.length];
 
         // +1 card
+        if (player.deck.length == 0) {
+          this.cards.transfer(player.discard, player.deck, player.discard.length)
+          player.deck = this.cards.shuffle(player.deck)
+        }
+        if (player.deck.length > 0) {
+          const card = currentPlayer.deck.pop();
+          currentPlayer.hand.push(card);
+        }
+        
         const card = currentPlayer.deck.pop();
         currentPlayer.hand.push(card);
 
@@ -269,8 +284,14 @@ export class CardsService {
           [state.turn % state.players.length];
 
         for (let i = 0; i < 2; i ++) {
-          const card = currentPlayer.deck.pop();
-          currentPlayer.hand.push(card);
+          if (player.deck.length == 0) {
+              this.cards.transfer(player.discard, player.deck, player.discard.length)
+              player.deck = this.cards.shuffle(player.deck)
+            }
+          if (player.deck.length > 0) {
+            const card = currentPlayer.deck.pop();
+            currentPlayer.hand.push(card);
+          }
         }
 
         newState.players
@@ -387,7 +408,16 @@ export class CardsService {
         const currentPlayer = state.players
           [state.turn % state.players.length];
 
-        this.transfer(currentPlayer.deck, currentPlayer.hand, 4);
+        for (let i = 0; i < 4; i++) {
+          if (player.deck.length == 0) {
+            this.cards.transfer(player.discard, player.deck, player.discard.length)
+            player.deck = this.cards.shuffle(player.deck)
+          }
+          if (player.deck.length > 0) {
+            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+          }
+        }
+        
         currentPlayer.buys ++;
 
         newState.players
@@ -466,7 +496,15 @@ export class CardsService {
           [state.turn % state.players.length];
 
         currentPlayer.actions += 1;
-        this.transfer(currentPlayer.deck, currentPlayer.hand, 2);
+        for (let i = 0; i < 2; i++) {
+          if (player.deck.length == 0) {
+            this.cards.transfer(player.discard, player.deck, player.discard.length)
+            player.deck = this.cards.shuffle(player.deck)
+          }
+          if (player.deck.length > 0) {
+            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+          }
+        }
         return newState;
       }
     },
@@ -488,7 +526,13 @@ export class CardsService {
         currentPlayer.actions += 1;
         currentPlayer.buys += 1;
         currentPlayer.coins += 1;
-        this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        if (player.deck.length == 0) {
+          this.cards.transfer(player.discard, player.deck, player.discard.length)
+          player.deck = this.cards.shuffle(player.deck)
+        }
+        if (player.deck.length > 0) {
+          this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        }
 
         return newState;
       }
@@ -509,7 +553,13 @@ export class CardsService {
           [state.turn % state.players.length];
 
         currentPlayer.actions += 1;
-        this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        if (player.deck.length == 0) {
+          this.cards.transfer(player.discard, player.deck, player.discard.length)
+          player.deck = this.cards.shuffle(player.deck)
+        }
+        if (player.deck.length > 0) {
+          this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        }
         if (currentPlayer.hand.find(card => card.name == 'silver'))
           currentPlayer.coins += 1;
 
@@ -560,8 +610,16 @@ export class CardsService {
 
         const currentPlayer = state.players
           [state.turn % state.players.length];
-
-        this.transfer(currentPlayer.deck, currentPlayer.hand, 3);
+        
+        for (let i = 0; i < 3; i++) {
+          if (player.deck.length == 0) {
+            this.cards.transfer(player.discard, player.deck, player.discard.length)
+            player.deck = this.cards.shuffle(player.deck)
+          }
+          if (player.deck.length > 0) {
+            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+          }
+        }
         return newState;
       }
     },
