@@ -443,6 +443,13 @@ export class CardsService {
         const currentPlayer = state.players
           [state.turn % state.players.length];
 
+        const card = currentPlayer.discard.find(card => card.name == 'feast');
+        if (card) {
+          const index = currentPlayer.discard.indexOf(card);
+          currentPlayer.discard.splice(index, 1);
+          currentPlayer.trash.push(card);
+        }
+        
         currentPlayer.buys ++;
         currentPlayer.coins += 5;
 
