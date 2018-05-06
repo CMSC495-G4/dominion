@@ -49,8 +49,7 @@ export class GameService {
         actions: 1,
         buys: 1,
       }
-	
-      player.deck = cards.shuffle(player.deck);
+
       cards.transfer(player.deck, player.hand, 5);
       this.state.players.push(player);
     }

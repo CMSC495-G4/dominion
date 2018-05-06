@@ -654,6 +654,8 @@ export class CardsService {
       cards.push(this.getCard('estate'));
     }
 
+    shuffled = []
+    shuffled = this.shuffle(cards);
     return cards;
   }
 
