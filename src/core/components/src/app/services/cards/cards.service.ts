@@ -192,6 +192,84 @@ export class CardsService {
         return newState;
       }
     },
+    
+    
+    {
+      name: 'woodcutter',
+      cost: 3,
+      type: 'action',
+      description: '+1 buy, +2 coins',
+      soundFile: 'remodel_workshop_smithy.mp3',
+      reducer: async (state: GameState)  => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+        const currentPlayer = newState.players
+          [state.turn % state.players.length];
+
+        // +1 buy
+        currentPlayer.buys += 1;
+
+        // +2 coins
+        currentPlayer.coins += 2;
+        return newState;
+      }
+    },
+
+
+    {
+      name: 'merchant',
+      cost: 3,
+      type: 'action',
+      description: '+1 cards, +1 action, +1 coin (w/ silver)',
+      soundFile: 'buy.mp3',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.actions += 1;
+        if (currentPlayer.deck.length == 0) {
+          this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
+          currentPlayer.deck = this.shuffle(currentPlayer.deck)
+        }
+        if (currentPlayer.deck.length > 0) {
+          this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        }
+        if (currentPlayer.hand.find(card => card.name == 'silver'))
+          currentPlayer.coins += 1;
+
+        return newState;
+      }
+    },
+
+
+
+    {
+      name: 'vassal',
+      cost: 3,
+      type: 'action',
+      description: 'discard top of deck. play discarded card if action',
+      soundFile: 'remodel_workshop_smithy.mp3',
+      reducer: async (state: GameState) =>  {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+        const currentPlayer = newState.players
+          [state.turn % state.players.length];
+
+	const card = currentPlayer.deck.pop();
+	if (card.type == 'action') {
+	  currentPlayer.hand.push(card);
+	  currentPlayer.actions += 1;
+	}
+	else {
+	  currentPlayer.discard.push(card);
+	}
+
+        return newState;
+      }
+    },
 
     {
       name: 'village',
@@ -224,27 +302,6 @@ export class CardsService {
       }
     },
 
-    {
-      name: 'woodcutter',
-      cost: 3,
-      type: 'action',
-      description: '+1 buy, +2 coins',
-      soundFile: 'remodel_workshop_smithy.mp3',
-      reducer: async (state: GameState)  => {
-        const { id, players, winner, turn, phase, supply } = state;
-        const newState = Object.assign({}, state);
-        const currentPlayer = newState.players
-          [state.turn % state.players.length];
-
-        // +1 buy
-        currentPlayer.buys += 1;
-
-        // +2 coins
-        currentPlayer.coins += 2;
-        return newState;
-      }
-    },
-
 
 
     {
@@ -270,43 +327,74 @@ export class CardsService {
     },
 
 
-
     {
-      name: 'witch',
-      cost: 5,
+      name: 'bureaucrat',
+      cost: 4,
       type: 'action',
-      description: 'opponents gain a curse',
-      soundFile: 'lab_witch.mp3',
+      description: 'gain a silver. opponents place victory card on top of deck',
+      soundFile: 'militia.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
-        const currentPlayer = newState.players
+
+        const currentPlayer = state.players
           [state.turn % state.players.length];
-
-        for (let i = 0; i < 2; i ++) {
-          if (currentPlayer.deck.length == 0) {
-              this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
-              currentPlayer.deck = this.shuffle(currentPlayer.deck)
-            }
-          if (currentPlayer.deck.length > 0) {
-            const card = currentPlayer.deck.pop();
-            currentPlayer.hand.push(card);
-          }
-        }
-
+	
+	
+        
         newState.players
           .filter(player => player.id != currentPlayer.id)
           .forEach(player => {
             if (player.hand.find(card => card.name == 'moat')) {
               this.server.sendLog(`${player.name}'s moat protects them!`);
             } else {
-              this.server.sendLog(`${player.name} has been cursed!`);
-              player.hand.push(this.getCard('curse'));
+              const card = player.hand.find(card => card.type == 'victory');
+              if (card) {
+                const index = player.hand.indexOf(card);
+                player.hand.splice(index, 1);
+                player.deck.unshift(card);
+              }
             }
           });
 
+          return newState;
+      }
+    },
+
+    {
+      name: 'feast',
+      cost: 4,
+      type: 'action',
+      description: '+5 coins, +1 buy, trash this card',
+      soundFile: 'feast.mp3',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        const card = currentPlayer.discard.find(card => card.name == 'feast');
+        if (card) {
+          const index = currentPlayer.discard.indexOf(card);
+          currentPlayer.discard.splice(index, 1);
+          currentPlayer.trash.push(card);
+        }
+        
+        currentPlayer.buys ++;
+        currentPlayer.coins += 5;
+
         return newState;
       }
+    },
+
+
+    {
+      name: 'gardens',
+      cost: 4,
+      type: 'victory',
+      description: '+1 victory point/10 cards',
+      soundFile: 'gardens.mp3',
     },
 
     {
@@ -370,6 +458,34 @@ export class CardsService {
     },
 
     {
+      name: 'poacher',
+      cost: 4,
+      type: 'action',
+      description: 'trash a copper for +3 coins',
+
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+	currentPlayer.actions += 1;
+	currentPlayer.coins += 1;
+
+	if (currentPlayer.deck.length == 0) {
+          this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
+          currentPlayer.deck = this.shuffle(currentPlayer.deck)
+        }
+        if (currentPlayer.deck.length > 0) {
+          this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+        }
+
+        return newState;
+      }
+    },
+
+    {
       name: 'remodel',
       cost: 4,
       type: 'action',
@@ -394,6 +510,80 @@ export class CardsService {
       }
     },
 
+    {
+      name: 'smithy',
+      cost: 4,
+      type: 'action',
+      description: '+3 cards',
+      soundFile: 'remodel_workshop_smithy.mp3',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+        
+        for (let i = 0; i < 3; i++) {
+          if (currentPlayer.deck.length == 0) {
+            this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
+            currentPlayer.deck = this.shuffle(currentPlayer.deck)
+          }
+          if (currentPlayer.deck.length > 0) {
+            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+          }
+        }
+        return newState;
+      }
+    },
+
+    {
+      name: 'throne room',
+      cost: 4,
+      type: 'action',
+      description: 'play an action card twice',
+      soundFile: 'remodel_workshop_smithy.mp3',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+        
+        
+        
+        return newState;
+      }
+    },
+
+    {
+      name: 'bandit',
+      cost: 5,
+      type: 'action',
+      description: 'gain a gold. opponents discard top two cards from deck. trash a silver or gold',
+      soundFile: 'militia.mp3',
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+        currentPlayer.coins += 2;
+        
+        newState.players
+          .filter(player => player.id != currentPlayer.id)
+          .forEach(player => {
+            if (player.hand.find(card => card.name == 'moat')) {
+              this.server.sendLog(`${player.name}'s moat protects them!`);
+	    } 
+	    else {
+              
+            }
+          });
+
+          return newState;
+      }
+    },
 
     {
       name: 'council room',
@@ -430,32 +620,6 @@ export class CardsService {
       }
     },
 
-    {
-      name: 'feast',
-      cost: 4,
-      type: 'action',
-      description: '+5 coins, +1 buy, trash this card',
-      soundFile: 'feast.mp3',
-      reducer: async (state: GameState) => {
-        const { id, players, winner, turn, phase, supply } = state;
-        const newState = Object.assign({}, state);
-
-        const currentPlayer = state.players
-          [state.turn % state.players.length];
-
-        const card = currentPlayer.discard.find(card => card.name == 'feast');
-        if (card) {
-          const index = currentPlayer.discard.indexOf(card);
-          currentPlayer.discard.splice(index, 1);
-          currentPlayer.trash.push(card);
-        }
-        
-        currentPlayer.buys ++;
-        currentPlayer.coins += 5;
-
-        return newState;
-      }
-    },
 
 
     {
@@ -477,14 +641,6 @@ export class CardsService {
 
         return newState;
       }
-    },
-
-    {
-      name: 'gardens',
-      cost: 4,
-      type: 'victory',
-      description: '+1 victory point/10 cards',
-      soundFile: 'gardens.mp3',
     },
 
 
@@ -516,6 +672,32 @@ export class CardsService {
       }
     },
 
+    {
+      name: 'library',
+      cost: 5,
+      type: 'action',
+      description: 'draw until hand has seven cards. can set aside any action cards drawn',
+      soundFile: 'lab_witch.mp3',
+
+      reducer: async (state: GameState) => {
+        const { id, players, winner, turn, phase, supply } = state;
+        const newState = Object.assign({}, state);
+
+        const currentPlayer = state.players
+          [state.turn % state.players.length];
+
+	while(currentPlayer.hand.length < 7) {
+          if (currentPlayer.deck.length == 0) {
+            this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
+            currentPlayer.deck = this.shuffle(currentPlayer.deck)
+          }
+          if (currentPlayer.deck.length > 0) {
+            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+          }
+        }
+        return newState;
+      }
+    },
 
     {
       name: 'market',
@@ -540,35 +722,6 @@ export class CardsService {
         if (currentPlayer.deck.length > 0) {
           this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
         }
-
-        return newState;
-      }
-    },
-
-
-    {
-      name: 'merchant',
-      cost: 3,
-      type: 'action',
-      description: '+1 cards, +1 action, +1 coin (w/ silver)',
-      soundFile: 'buy.mp3',
-      reducer: async (state: GameState) => {
-        const { id, players, winner, turn, phase, supply } = state;
-        const newState = Object.assign({}, state);
-
-        const currentPlayer = state.players
-          [state.turn % state.players.length];
-
-        currentPlayer.actions += 1;
-        if (currentPlayer.deck.length == 0) {
-          this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
-          currentPlayer.deck = this.shuffle(currentPlayer.deck)
-        }
-        if (currentPlayer.deck.length > 0) {
-          this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
-        }
-        if (currentPlayer.hand.find(card => card.name == 'silver'))
-          currentPlayer.coins += 1;
 
         return newState;
       }
@@ -605,28 +758,41 @@ export class CardsService {
       }
     },
 
+
     {
-      name: 'smithy',
-      cost: 4,
+      name: 'witch',
+      cost: 5,
       type: 'action',
-      description: '+3 cards',
-      soundFile: 'remodel_workshop_smithy.mp3',
+      description: 'opponents gain a curse',
+      soundFile: 'lab_witch.mp3',
       reducer: async (state: GameState) => {
         const { id, players, winner, turn, phase, supply } = state;
         const newState = Object.assign({}, state);
-
-        const currentPlayer = state.players
+        const currentPlayer = newState.players
           [state.turn % state.players.length];
-        
-        for (let i = 0; i < 3; i++) {
+
+        for (let i = 0; i < 2; i ++) {
           if (currentPlayer.deck.length == 0) {
-            this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
-            currentPlayer.deck = this.shuffle(currentPlayer.deck)
-          }
+              this.transfer(currentPlayer.discard, currentPlayer.deck, currentPlayer.discard.length)
+              currentPlayer.deck = this.shuffle(currentPlayer.deck)
+            }
           if (currentPlayer.deck.length > 0) {
-            this.transfer(currentPlayer.deck, currentPlayer.hand, 1);
+            const card = currentPlayer.deck.pop();
+            currentPlayer.hand.push(card);
           }
         }
+
+        newState.players
+          .filter(player => player.id != currentPlayer.id)
+          .forEach(player => {
+            if (player.hand.find(card => card.name == 'moat')) {
+              this.server.sendLog(`${player.name}'s moat protects them!`);
+            } else {
+              this.server.sendLog(`${player.name} has been cursed!`);
+              player.hand.push(this.getCard('curse'));
+            }
+          });
+
         return newState;
       }
     },
